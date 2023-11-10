@@ -1,0 +1,2 @@
+globals.MAGNIFICATIONS=['Mag10x','Mag20x','Mag100x']
+globals.BINS=[1,2,4,8]
