@@ -36,7 +36,7 @@ jobs:
         python-version: '3.11'
     - name: Install dependencies
       run: |
-        ./install/MacOs.sh 3.11
+        ./install/MacOs.sh 3.10
     - name: Unit Testing
       run: |
         ./test.sh

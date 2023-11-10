@@ -1,0 +1,2 @@
+Matrix [NbyN float]=[[2.0, 0.0], [0.0, 2.0]]
+Zero [N float]=[0.0, 0.0]
