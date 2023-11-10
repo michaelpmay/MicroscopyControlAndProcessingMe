@@ -13,7 +13,7 @@ permissions:
   contents: read
 
 jobs:
-  build3.10:
+  build310:
     runs-on: [self-hosted, linux]
     steps:
     - uses: actions/checkout@v3
@@ -27,7 +27,7 @@ jobs:
       run: |
         ./test.sh
 
-  build3.11:
+  build311:
     runs-on: [self-hosted, linux]
     steps:
     - uses: actions/checkout@v3
