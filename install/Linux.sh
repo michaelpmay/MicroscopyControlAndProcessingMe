@@ -10,6 +10,6 @@ if [ -d "venv" ]; then
 fi
 
 python$1 -m venv venv/
-source env/bin/activate
+source venv/bin/activate
 python$1 -m pip install --upgrade pip
 pip install -r requirements.txt
