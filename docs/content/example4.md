@@ -1,1 +1,0 @@
-# Example 4: Destroying Cells With Undesired Phenotypes

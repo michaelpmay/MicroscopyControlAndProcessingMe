@@ -22,9 +22,9 @@ This repository can also use multiple machines to accelerate compute times and u
 
 [**Example Two: Acquire-Process-Decide using Microscopy Emulation**](docs/content/example2.md)
 
-[**Application 1: Finding twenty-five cells in a real system**](docs/content/example3.md)
+[**Application 1: Finding twenty-five cells in a real system**](docs/content/application1.md)
 
-[**Application 2: Identifying ten puncta and making ten movies in a real system**](docs/content/example4.md)
+[**Application 2: Identifying ten puncta and making ten movies in a real system**](docs/content/application2.md)
 
 ## The rest of the page will discuss a real application of the automation
 

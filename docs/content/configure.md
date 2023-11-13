@@ -1,3 +1,7 @@
 # Configuration
+![alt text](https://github.com/michaelpmay/MicroscopyControlAndProcessingMe/blob/main/docs/files/configurationBanner.png)
 
-## Setting up the Config File
+## Hardware Confuiguration
+
+
+## Software Configuration
