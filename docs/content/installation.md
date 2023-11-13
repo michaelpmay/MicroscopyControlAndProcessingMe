@@ -9,32 +9,32 @@ depending on the type of operating system you use
 
 
 ## Mac Os Instructions
-### Cloning the git repository
+**Cloning the git repository**
+
 Go to your git projects folder and run:
 ```
 git clone https://github.com/MunskyGroup/MicroscopyControlAndProcessing.git
 ```
-### Running the installation script
+**Running the installation script**
+
 Install Python 3.10 or 3.11 on the system [here](https://www.python.org/downloads/macos/) and run either of these commands
 Using Python 3.10 as the base operating system:
 ```
-./install/MacOs.sh 3.10
-```
-Using Python 3.11 as the base operating system:
-```
-./install/MacOs.sh 3.11
+./install/MacOs.sh 3.10     or      ./install/MacOs.sh 3.11
 ```
 ## Windows Instructions
 
 Under construction
 
 ## Linux Instructions
-Using Python 3.10 as the base operating system:
+**Cloning the git repository**
+
+Go to your git projects folder and run:
 ```
-./install/Linux.sh 3.10
+git clone https://github.com/MunskyGroup/MicroscopyControlAndProcessing.git
 ```
-Using Python 3.11 as the base operating system:
+**Running the installation script**
 ```
-./install/Linux.sh 3.11
+./install/Linux.sh 3.10    or   ./install/Linux.sh 3.11
 ```
 
