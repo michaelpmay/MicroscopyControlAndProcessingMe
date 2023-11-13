@@ -1,6 +1,6 @@
 # Installation
 
-![alt text](https://github.com/MunskyGroup/MicroscopyControlAndProcessingMe/blob/main/docs/files/installationBanner.png)
+![alt text](https://github.com/michaelpmay/MicroscopyControlAndProcessingMe/blob/main/docs/files/installationBanner.png)
  
 > 
 ## Software PreRequisites
