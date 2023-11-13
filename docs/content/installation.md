@@ -24,11 +24,17 @@ Using Python 3.11 as the base operating system:
 ```
 ./install/MacOs.sh 3.11
 ```
-
 ## Windows Instructions
 
-
+Under construction
 
 ## Linux Instructions
-
+Using Python 3.10 as the base operating system:
+```
+./install/Linux.sh 3.10
+```
+Using Python 3.11 as the base operating system:
+```
+./install/Linux.sh 3.11
+```
 
