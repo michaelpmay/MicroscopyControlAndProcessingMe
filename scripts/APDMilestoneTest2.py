@@ -8,8 +8,7 @@ imagePixSizeXY = [512*numROIXYSteps, 512*numROIXYSteps]
 numCellsSimulated = numROIXYSteps*numROIXYSteps*2
 ROIImSize=[512,512]
 emulator=ImageEmulator2Channel()
-image_folder = 'data/core/cell_library'
-emulator.loadImageFilePath(image_folder)
+emulator.loadImageFilePath('data/core/cell_library')
 emulator.setXYImageSize(ROIImSize)
 emulator.setAlpha([0.,0.,0.])
 emulator.simulatePositions(imagePixSizeXY, numCellsSimulated)
