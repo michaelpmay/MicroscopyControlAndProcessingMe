@@ -4,14 +4,15 @@
 
 ## Software PreRequisites
 
-Install the nightly version of [**MicroManager**](https://micro-manager.org/Micro-Manager_Installation_Notes) (2023-07-05)
-depending on the type of operating system you use
-
-**If you are Using Windows or MacOs: Install Python 3.10 or 3.11 on the system**
+**(1) If you are Using Windows or MacOs: Install Python 3.10 or 3.11 on the system**
 
 [**Windows**](https://www.python.org/downloads/windows/)
 
 [**MacOs**](https://www.python.org/downloads/macos/)
+
+
+**(2) Install the nightly version of** [**MicroManager Version 2.0**](https://micro-manager.org/Micro-Manager_Nightly_Builds) (2023-07-05) using [**these instructions**](https://micro-manager.org/Micro-Manager_Installation_Notes)
+
 
 
 ## Mac Os Instructions
