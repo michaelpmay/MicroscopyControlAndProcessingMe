@@ -1,4 +1,4 @@
-from environment import *
+from source.environment import *
 builder=EnvironmentBuilder()
 builder.setInterface('headless') #headless or gui
 #before you go here mount the samba share and point to 'Z:\\Users\\Michael'
