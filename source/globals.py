@@ -82,6 +82,8 @@ class Globals(object):
 
     def init(globals,configFile='config.txt'):
         """MUST KEEP THIS AS globals AND NOT self!! IMPORTANT FOR EVAL OF config.txt VALUES"""
+        #print(configFile)
+
         with open(configFile, 'r') as file:
             line='x' #initialize line as a sample string just to get into loop. when file.readline()=None loop stops
             while line:

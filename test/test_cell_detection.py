@@ -5,7 +5,7 @@ import source.globals
 import os
 class TestCellDetectorThreshold(unittest.TestCase):
     def testDomain(self):
-        g=globals.Globals()
+        g=source.globals.Globals()
         detector=CellDetectorThreshold()
         detector.threshold=2000
         dmanager=source.data_manager.DataManager()

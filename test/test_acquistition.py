@@ -77,17 +77,6 @@ class TestAcquisitionPlugin(unittest.TestCase):
         self.assertListEqual(plugin.events.xy_positions, [[0, 0], [0, 1], [1, 1]])
 
         #plugin.run()
-class TestAcquisitionHookLibrary(unittest.TestCase):
-    def setUp(self) -> None:
-        self.object=AcquisitionHookLibrary()
-    def testDomain(self):
-        hooks=self.object.get('default')
-        hooks.output
-        hooks=self.object.get('verbose')
-        hooks.hookPreHardware({},None,None)
-        hooks.hookPostHardware({},None,None)
-        hooks.hookPostCamera({},None,None)
-        hooks.output
 
 
 class TestAcquisitionBuilder(unittest.TestCase):

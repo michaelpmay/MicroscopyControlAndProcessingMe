@@ -282,7 +282,7 @@ class DataStorageLocal(iDataManager):
         isPathExists=os.path.exists(self.folder)
         if not isPathExists:
             os.mkdir(self.folder)
-        print(fullFilePath)
+        #print(fullFilePath)
         self.io.save(fullFilePath,value)
 
     def remove(self,key):
@@ -357,7 +357,7 @@ class RemoteIOHttps:
         return data
 
 class DataStorageRemote:
-    localStorage=DataStorageLocal(os.path.join('remote'))
+    localStorage=DataStorageLocal(os.path.join('data','remote'))
     remoteio=RemoteIOHttps(url='http://munsky-nas.engr.colostate.edu/PythonAutomation/')
 
 

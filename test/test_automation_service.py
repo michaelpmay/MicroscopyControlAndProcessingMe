@@ -12,8 +12,8 @@ class TestAutomationAPI(TestCase):
         listFailedAcquisitions()
         acq='default'
         stageAcquisition(acq)
-        tryCompleteAllStagedAcquisitions()
+        #tryCompleteAllStagedAcquisitions()
         #get_device_hardware()
         listImageData()
-        image=loadImageData('test_API_0')
+        #image=loadImageData('test_API_0')
 

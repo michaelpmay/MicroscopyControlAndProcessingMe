@@ -1,6 +1,6 @@
 from unittest import TestCase
 from source.postprocessors import *
-import scipy.ndimage
+import imageio
 class TestPostProcessNode(TestCase):
     def setUp(self) -> None:
         self.object=PostProcessNode()
@@ -17,7 +17,7 @@ class TestPostProcessNode(TestCase):
 
 class TestPostProcessor(TestCase):
     def setUp(self) -> None:
-        image=scipy.ndimage.imread('data/core/MLDatasetMasked/images/image_126.jpg')
+        image=imageio.imread('data/core/MLDatasetMasked/images/image_126.jpg')
         self.object = PostProcessor(data=image, acq=AcquisitionPlugin())
     def test_add_null_and_process_works(self):
         self.object.add('null')
@@ -32,7 +32,7 @@ class TestPostProcessor(TestCase):
         self.assertEqual(output['source'],self.object.data)
     def test_processPipeline_returnsdict(self):
 
-        self.object.add('FishPipeline')
+        self.object.add('fishPipeline')
         output = self.object.get()
 
 

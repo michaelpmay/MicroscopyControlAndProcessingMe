@@ -226,8 +226,8 @@ class ImageEmulator2Channel():
                                        cell_size_Z_Y_X[library_cell_index, 2], nucleus_area,
                                        number_of_spots] + ts_array.tolist() + [library_cell_index],
                                       index=simulation_dataframe.columns)
-                #simulation_dataframe = simulation_dataframe.append(cell_data, ignore_index=True)
-                simulation_dataframe = pd.concat([simulation_dataframe,cell_data],ignore_index=True)
+                simulation_dataframe = simulation_dataframe.append(cell_data, ignore_index=True)
+                #simulation_dataframe = pd.concat([simulation_dataframe,cell_data],ignore_index=True)
                 printed_cells += 1
             counter += 1
         new_dtypes = {'start_y_position': int, 'start_x_position': int, 'centroid_y': int, 'centroid_x': int,

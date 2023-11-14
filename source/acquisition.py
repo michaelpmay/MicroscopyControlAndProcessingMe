@@ -14,7 +14,6 @@ class iAcquisitionLibrary:
     '''A class that creates different acquisition plugins. Factory Design pattern'''
     pass
 
-
 class EventsTicket:
     """a big glob of parameters to represent data needed for acquisition"""
     def __init__(self):
@@ -22,6 +21,7 @@ class EventsTicket:
         self._time_interval_s = 0
         self._z_start = None
         self._z_end = None
+        self._z_step = None
         self._channel_group = None
         self._channels = None
         self._channel_exposures_ms = None
