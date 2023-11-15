@@ -330,22 +330,22 @@ class APDFunctionLibrary(iAPDSystemLibrary):
 
         def f(self):
             if emulator is not None:
-                self.env.backend.loadAcquisition('image_emulator', emulator)
+                self.backend.loadAcquisition('image_emulator', emulator)
             else:
-                self.env.backend.loadAcquisition('default')
+                self.backend.loadAcquisition('default')
             data = {}
             if laserIntensityRGBV:
                 try:
                     for i in range(laserIntensityRGBV):
-                        self.env.backend.devices[g.KEY_DEVICE_LASERS].setLaserPowerInWatts(laserIntensityRGBV[i])
+                        self.backend.devices[g.KEY_DEVICE_LASERS].setLaserPowerInWatts(laserIntensityRGBV[i])
                 except:
                     print("Warning Setting Laser Failed")
             lib = AcquisitionPluginLibrary()
-            self.env.backend.acquisition = lib.xyLooseGrid(xRangeROI, yRangeROI, xyOriginROI,
+            self.backend.acquisition = lib.xyLooseGrid(xRangeROI, yRangeROI, xyOriginROI,
                                                            name='exampleMileStone1_Part1', calibration=calibration,
                                                            show_display=show_display)
             currentTime = time.time()
-            dataset = self.env.backend.acquireAndReturnDataset()
+            dataset = self.backend.acquireAndReturnDataset()
             print('FindingTime={0}'.format(time.time() - currentTime))
             processor = PostProcessor(data=dataset, acq=self.env.backend.acquisition, computer=compute)
             currentTime = time.time()

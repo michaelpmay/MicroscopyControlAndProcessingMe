@@ -1,10 +1,10 @@
 import time
 
 import matplotlib.pyplot as plt
-from apd import *
-from image_emulator import TestImageEmulator, ImageEmulator2Channel,ImageEmulatorWrapper
-from distributed_computing import DistributedComputeDaskTask
-from calibration import MatrixCalibration
+from source.apd import *
+from source.image_emulator import TestImageEmulator, ImageEmulator2Channel,ImageEmulatorWrapper
+from source.distributed_computing import DistributedComputeDaskTask
+from source.calibration import MatrixCalibration
 apd=APDSystem(configFileName='TSLAB_DEVICE_CONFIG.cfg')
 lib=APDFunctionLibrary()
 numROIXYSteps=8+1 #(number of roi+1)
@@ -30,5 +30,5 @@ currentTime=time.time()
 maxNumCells=100
 apdFunction=lib.findNPunctaInGridNoZ(xROIRange,yROIRange,xyROIOrigin,channels=['Filter',['Green', 'Blue'],[100.,100.]],
 laserIntensityRGBV=None,zRange=[-3.,3.,.5],timeRange=None,emulator=None,compute=compute,threshold=0,calibration=ViewToStageXYROICalibrator,show_display=False,split_roi=False)
-apd.run(apdFunction)
+apd.runFunction(apdFunction)
 print(time.time()-currentTime)

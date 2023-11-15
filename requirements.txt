@@ -13,7 +13,7 @@ matplotlib
 matplotlib-scalebar
 numpy
 opencv-python
-pandas
+pandas==1.5.3
 Pillow
 pycromanager==0.27.5
 pyserial
