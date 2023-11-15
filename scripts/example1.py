@@ -3,51 +3,36 @@ from source.image_emulator import ImageEmulator2Channel
 from source.distributed_computing import DistributedComputeDaskTask
 apdSystem=APDSystem(rootDataFolder=os.path.join(''),configFileName='myConfig.cfg',user='default')
 
-## SETTINGS TO CHANGE ALL THE TIME
-
-##### Acquisition Settings #####
-xROIRange=[0,512,1024]
-yROIRange=[0,512,1024]
+# IMage Settings to Acquire a grid of images
+numROIXYSteps=4
+xROIRange=[0,1,2]*512
+yROIRange=[0,1,2]*512
 xyROIOrigin=[0,0]
-zRange=None
-timeRange=None
-channelRange=None
-##### Emulation Settings #####
-emulator=None
-## SETTINGS TO SHAVE SOMETIMES
-compute=DistributedComputeLocal()
-#compute=DistributedComputeDaskTask('localhost:8765')
-
-## SETTINGS TO CHANGE RARELY
 ROIImSize=[512,512]
 
-## Change FOV Settings here
-
-
-## Change Image Emulation settings here
-
-
-## DONT TOUCH ANYTHING BBACK HERE OR IT ALL DIES
-numROIXYSteps=4
-imagePixSizeXY = [512*numROIXYSteps, 512*numROIXYSteps]
-numCellsSimulated = numROIXYSteps*numROIXYSteps*2
+# Settings for Image Emulation
 emulator=ImageEmulator2Channel()
-emulator.loadImageFilePath('data/core/cell_library')
 emulator.setXYImageSize(ROIImSize)
-emulator.setAlpha([0.,0.,0.])
-emulator.simulatePositions(imagePixSizeXY, numCellsSimulated)
+numCellsSimulated=50
+canvasSizeXY=[512*numROIXYSteps,512*numROIXYSteps]
+emulator.simulatePositions(canvasSizeXY,numCellsSimulated)
 
-# [1] Adjust Acquisitision Settings
+compute=DistributedComputeLocal()
+
 lib=AcquisitionPluginLibrary()
-acquisition=lib.xyLooseGrid(xROIRange,yROIRange,xyROIOrigin,channelRange=['Channel',['Cy5', 'DAPI'],[100.,100.]],laserIntensities=None,zRange=zRange,timeRange=timeRange, emulator=None)
-acquisition=lib.xyLooseGrid(xROIRange,yROIRange,xyROIOrigin,channelRange=None,laserIntensities=None,zRange=None,timeRange=None, emulator=emulator)
-# [2] Adjust Process Settings
+acquisition=lib.xyLooseGrid(xROIRange,yROIRange,xyROIOrigin,
+                            channelRange=None,
+                            laserIntensities=None,
+                            zRange=None,
+                            timeRange=None,
+                            emulator=emulator)
+
 process=PostProcessor(computer=compute)
 process.add('fovMeanIntensity')
-process.add('cellDetectNumCellsInRoi')
+process.add('cellDetectNumCellsInRoi',model_type='cyto')
 process.add('cellDetectSpotLocationsInRoi')
-process.add('fishPipeline')
-# [3] Adjust Decision Settings
+#process.add('fishPipeline')
+
 decision=DecisionNull()
 apdSystem.linkAPD(acquisition,process,decision)
 apdSystem.run()
