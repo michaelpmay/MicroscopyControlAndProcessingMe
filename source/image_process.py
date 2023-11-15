@@ -537,22 +537,9 @@ class ImageCalculateFishPipeline(iMicroscopyImageCalculate):
         pass
 
     def process(self,image,channels_with_cytosol=None,channels_with_nucleus=None,channels_with_FISH=None,diameter_nucleus=80,diameter_cytosol=0,voxel_size_z=500,voxel_size_yx=130,file_name_str='temp',psf_z=500,psf_yx=300,cellprob_threshold=.1,show_plots=False):
-        pipeline=PipelineFISH(
-            image=np.array(image),
-            channels_with_cytosol=channels_with_cytosol,
-            channels_with_nucleus=channels_with_nucleus,
-            channels_with_FISH=channels_with_FISH,
-            diameter_nucleus=diameter_nucleus,
-            diameter_cytosol=diameter_cytosol,
-            voxel_size_z=voxel_size_z,
-            voxel_size_yx=voxel_size_yx,
-            file_name_str=file_name_str,
-            cellprob_threshold=cellprob_threshold,
-            psf_z=psf_z,
-            psf_yx=psf_yx,
-            show_plots=show_plots,
-            # folder_name='termi'
-        )
+        #array=np.zeros([1,1,512,512,1])
+        #array[0,0,:,:,0]=image
+        pipeline=PipelineFISH(image=image,channels_with_cytosol=channels_with_cytosol,channels_with_nucleus=channels_with_nucleus,channels_with_FISH=channels_with_FISH,diameter_nucleus=diameter_nucleus,diameter_cytosol=diameter_cytosol,voxel_size_z=voxel_size_z,voxel_size_yx=voxel_size_yx,file_name_str=file_name_str,cellprob_threshold=cellprob_threshold,psf_z=psf_z,psf_yx=psf_yx,show_plots=show_plots)
         dataframe = pipeline.run()
         return dataframe
 

@@ -22,20 +22,27 @@ class iPostProcessLibrary:
         pass
 
 class PostProcessor:
-    def __init__(self,data={},acq=AcquisitionPlugin(),computer=DistributedComputeDaskTask('localhost:8786')):
+    def __init__(self,computer=DistributedComputeLocal()):
         self.tasks=[]
-        self.data=data
+        self.data=None
         self.output={}
-        self.acq=acq
+        self.acq=None
         self.computer=computer
     def add(self, key, *args, **kwargs):
-        lib = PostProcessLibrary(computer=self.computer)
+        lib = PostProcessLibrary()
         processor=lib.get(key, *args, **kwargs)
-        data=processor.process(self.data,self.acq)
-        self.output.update(data)
+        self.tasks.append(processor)
+        #data=processor.process(self.data,self.acq)
+        #self.output.update(data)
 
     def get(self):
         return self.output
+
+    def process(self,data,acq):
+        output={}
+        for i in range(len(self.tasks)):
+            output.update(self.tasks[i].process(data,acq))
+        return output
 
 
 class PostProcessNode(iPostProcess):
@@ -53,7 +60,7 @@ class PostProcessNode(iPostProcess):
         return self.function(self,dataset,acq,*args,**kwargs)
 
 class PostProcessLibrary():
-    def __init__(self,computer=DistributedComputeDaskTask('localhost:8786')):
+    def __init__(self,computer=DistributedComputeLocal()):
         self.computer=computer
         #print("PLIBRARY:{0}".format(self.computer))
     def get(self, key, *args, **kwargs):
@@ -376,7 +383,7 @@ class PostProcessLibrary():
         def function(self,dataset,acq,*args,threshold=threshold):
             #print(type(self.computer))
             detector=ImageCalculateFishPipeline()
-            d = dataset
+            d = dataset.as_array()
             acq_len_dims = d.shape[:-2]
             fishPipelineData = []
             index=[]
@@ -396,7 +403,7 @@ class PostProcessLibrary():
                 for i in range(d.numblocks[0]):
                     for j in range(d.numblocks[1]):
                         chunk = np.array(d.blocks[i, j,:, :]).squeeze()
-                        tasks.append(Task(detector.process))
+                        tasks.append(Task(detector.process,chunk))
                 output=self.computer.run(tasks)
                 ind=0
                 for i in range(d.numblocks[0]):

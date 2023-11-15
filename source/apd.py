@@ -4,6 +4,7 @@ from source.acquisition import AcquisitionPluginLibrary
 from source.postprocessors import PostProcessor
 from source.calibration import NullCalibration
 from source.distributed_computing import DistributedComputeLocal
+from source.verbosity import Verbosity
 class iAPDFunction:
     def run(self):
         pass
@@ -35,11 +36,12 @@ class APDFunction:
             raise TypeError
         self.f=f
 class APDSystem:
-    def __init__(self,configFileName='myConfig.cfg',rootPath='',authentication='local'):
-        self.initializeEnvironment(configFileName=configFileName,rootPath=rootPath,authentication=authentication)
+    def __init__(self,configFileName='myConfig.cfg',rootDataFolder='',authentication='local',user='default'):
+        self.initializeBackend(configFileName=configFileName,rootPath=rootDataFolder,authentication=authentication,user=user)
         self.apdfunction=APDFunction()
         self.distributed=DistributedComputeLocal()
-    def initializeEnvironment(self,configFileName='myConfig.cfg',rootPath='',authentication='local'):
+        self.chain=[]
+    def initializeBackend(self,configFileName='myConfig.cfg',rootPath='',authentication='local',user='default'):
         builder = EnvironmentBuilder()
         builder.setInterface('headless')  # headless or gui
         # before you go here mount the samba share and point to 'Z:\\Users\\Michael'
@@ -47,15 +49,16 @@ class APDSystem:
         # builder.setRootDataPath('Z:\\Users\\Michael') #sets the root folder for the held data use windows to mount the Z drive with nas!
         builder.setRootDataPath(rootPath)  # current directory
         builder.setAuthentication(authentication)  # local, or NoPassword
-        builder.setUser('default', '')
+        builder.setUser(user, '')
         builder.setConfiguration(configFileName=configFileName)
         builder.clearAcquisitionCache()
-        self.env = builder.getEnvironment()
+        self.backend = builder.getEnvironment().backend
 
-    def run(self,function,*args,**kwargs):
-        self.env.backend.connectDevices()
+
+    def runFunction(self,function,*args,**kwargs):
+        self.backend.connectDevices()
         dataset=function.run(self,*args,**kwargs)
-        self.env.backend.disconnectDevices()
+        self.backend.disconnectDevices()
         return dataset
 
     def loadFunction(self,key):
@@ -68,6 +71,34 @@ class APDSystem:
         else:
             raise TypeError
 
+    def linkAPD(self,acquisition,process,decision,saveInitialImages=None,saveDataset=None,saveFinalImages=None):
+        if not isinstance(acquisition,AcquisitionPlugin):
+            raise TypeError
+        if not isinstance(process, PostProcessor):
+            raise TypeError
+        if not isinstance(decision,iDecision):
+            raise TypeError
+        settings={'saveInitialImages':saveInitialImages,'saveDataset':saveDataset,'saveFinalImages':saveFinalImages}
+        self.chain.append([acquisition,process,decision,settings])
+
+    def run(self):
+        for i in range(len(self.chain)):
+            [acquisition, processor, decision,settings]=self.chain[i]
+            images=self.acquire(acquisition)
+            if settings['saveInitialImages']:
+                self.backend.datamanager.put(images,settings['saveInitialImages'])
+            dataset=processor.process(images,acquisition)
+            if settings['saveDataset']:
+                self.backend.datamanager.put(dataset,settings['saveDataset'])
+            new_acquisition=decision.propose(dataset,acquisition)
+            if new_acquisition:
+                self.acquire(new_acquisition)
+                if settings['saveFinalImages']:
+                    self.backend.datamanager.put(images, settings['saveFinalImages'])
+
+    def acquire(self,acquisition):
+        dataset = self.backend.acquire(acquisition)
+        return dataset
 class APDFunctionLibrary(iAPDSystemLibrary):
     def list(self):
         apdList = [attribute for attribute in dir(self)
@@ -233,31 +264,32 @@ class APDFunctionLibrary(iAPDSystemLibrary):
 
         def f(self):
             if emulator is not None:
-                self.env.backend.loadAcquisition('image_emulator', emulator)
+                self.backend.loadAcquisition('image_emulator', emulator)
             else:
-                self.env.backend.loadAcquisition('default')
+                self.backend.loadAcquisition('default')
             g=Globals()
             if laserIntensityRGBV:
                 try:
                     for i in range(laserIntensityRGBV):
-                        self.env.backend.devices[g.KEY_DEVICE_LASERS].setLaserPowerInWatts(laserIntensityRGBV[i])
+                        self.backend.devices[g.KEY_DEVICE_LASERS].setLaserPowerInWatts(laserIntensityRGBV[i])
                 except:
                     print("Warning Setting Laser Failed")
             lib=AcquisitionPluginLibrary()
-            self.env.backend.acquisition=lib.xyLooseGrid(xRangeROI,yRangeROI,xyOriginROI,name='exampleMileStone1_Part1',calibration=calibration)
-            print(self.env.backend.acquisition.events.xy_positions)
-            dataset = self.env.backend.acquireAndReturnDataset()
-            processor = PostProcessor(data=dataset, acq=self.env.backend.acquisition)
+            self.backend.acquisition=lib.xyLooseGrid(xRangeROI,yRangeROI,xyOriginROI,name='exampleMileStone1_Part1',calibration=calibration)
+            print(self.backend.acquisition.events.xy_positions)
+            dataset = self.backend.acquireAndReturnDataset()
+            processor = PostProcessor()
             processor.add('cellDetectSpotLocationsInRoiDoughnut',sigma=[3,8])
             processor.add('cellDetectNumCellsInRoi',default_flow_threshold = .1,MINIMUM_CELL_AREA = 30,model_type=model_type)
+            processor.process(dataset, self.env.backend.acquisition)
             processed_data = processor.get()
 
-            self.env.backend.datamanager[g.DATAKEY_USERDATA].save('findTranscriptionSitesInGrid1.pkl',processed_data)
+            self.backend.datamanager[g.DATAKEY_USERDATA].save('findTranscriptionSitesInGrid1.pkl',processed_data)
             decision = DecisionPickROIFromXYSpotLocations(numCellsThreshold = 1)
-            self.env.backend.acquisition = decision.propose(processed_data, self.env.backend.acquisition,zRange=zRange,timeRange=timeRange,channels=channels)
-            print(self.env.backend.acquisition.events.xy_positions)
-            self.env.backend.acquisition.settings.name='findTranscriptionSitesInGrid2'
-            dataset = self.env.backend.acquireAndReturnDataset()
+            self.backend.acquisition = decision.propose(processed_data, self.env.backend.acquisition,zRange=zRange,timeRange=timeRange,channels=channels)
+            print(self.backend.acquisition.events.xy_positions)
+            self.backend.acquisition.settings.name='findTranscriptionSitesInGrid2'
+            dataset = self.backend.acquireAndReturnDataset()
             return dataset
 
 

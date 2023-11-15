@@ -8,6 +8,10 @@ class iDecision:
         '''take old acquisition and processed data dictionary and propose a new experiment'''
         return
 
+class DecisionNull(iDecision):
+    def propose(self,processed_data,acquisition):
+        return None
+
 class DecisionRepeatAcquisition(iDecision):
     def propose(self,processed_data,acquisition):
         if not isinstance(processed_data,dict):

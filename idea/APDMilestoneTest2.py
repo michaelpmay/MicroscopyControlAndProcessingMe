@@ -22,5 +22,5 @@ yROIRange=range(numROIXYSteps-1)
 xyROIOrigin=[0,0]
 apdFunction=lib.findTranscriptionSitesInGrid(xROIRange,yROIRange,xyROIOrigin,ROIImSize,threshold=200,channels=['Channel',['Cy5', 'DAPI'],[100.,100.]],
 laserIntensityRGBV=[6.,1.,5.,0.],zRange=None,timeRange=[2,1.],emulator=emulator,calibration=calibration)
-apd.run(apdFunction)
+apd.runFunction(apdFunction)
 #emulator.saveCache()

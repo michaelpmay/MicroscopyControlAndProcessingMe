@@ -186,21 +186,12 @@ class Backend(iBackend):
     def disconnectDevices(self):
         self.devices.close()
 
-    def acquire(self):
-        if not isinstance(self.acquisition,a.AcquisitionPlugin):
+    def acquire(self,acquisition):
+        if not isinstance(acquisition, a.AcquisitionPlugin):
             raise TypeError
-        if self.acquisition.settings.directory==None:
-            self.acquisition.settings.directory=self.globals.DATA_ACQUISITION_PATH
-        self.acquisition.run()
-        self.verbosity.add('Acquisition Complete')
-        self.verbosity.print()
-
-    def acquireAndReturnDataset(self):
-        if not isinstance(self.acquisition,a.AcquisitionPlugin):
-            raise TypeError
-        if self.acquisition.settings.directory==None:
-            self.acquisition.settings.directory=self.globals.DATA_ACQUISITION_PATH
-        dataset=self.acquisition.runAndReturnDataset()
+        if acquisition.settings.directory == None:
+            acquisition.settings.directory = self.globals.DATA_ACQUISITION_PATH
+        dataset = acquisition.run()
         self.verbosity.add('Acquisition Complete')
         self.verbosity.print()
         return dataset

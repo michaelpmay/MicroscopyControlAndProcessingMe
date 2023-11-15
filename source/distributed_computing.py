@@ -162,16 +162,12 @@ class DistributedComputeLocal:
     def run(self,tasks):
         if not  isinstance(tasks,list):
             raise TypeError
-        print("LOCAL")
-        currentTime=time.time()
         output=[]
         for t in tasks:
             output.append(t())
-        print(time.time()-currentTime)
         return output
 
 class DistributedComputeDaskTask:
-
     def __init__(self,*args):
         if len(args)==1:
             self.host_port=args[0]

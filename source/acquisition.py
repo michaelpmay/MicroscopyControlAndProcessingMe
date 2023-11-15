@@ -2,6 +2,7 @@ import numpy as np
 from pycromanager import *
 from source.hooks import *
 from source.calibration import NullCalibration
+from source.devices import ExternalDeviceManager
 class iEventsTicket:
     '''big object holds the parameters for building events'''
     pass
@@ -301,6 +302,7 @@ class AcquisitionPlugin:
         self.events=EventsTicket()
         self.settings=AcquisitionSettings()
         self.hooks=AcquisitionHooks()
+        self.laserIntensities=None
     def run(self):
         events=self.getEvents()
         #print('Number of events in schedule:{0}'.format(len(events)))
@@ -335,45 +337,9 @@ class AcquisitionPlugin:
                         debug=self.settings.debug,
                         core_log_debug=self.settings.core_log_debug,
                         port=self.settings.port)
-            acq.acquire(events)
-
-
-    def runAndReturnDataset(self):
-        events=self.getEvents()
-        if not self.settings.is_seeding:
-            with  Acquisition(directory=self.settings.directory,
-                          name=self.settings.name,
-                          image_process_fn=self.hooks.hookImageProcess,
-                          #event_generation_hook_fn=self.hooks.hookEventGeneration,
-                          pre_hardware_hook_fn=self.hooks.hookPreHardware,
-                          post_hardware_hook_fn=self.hooks.hookPostHardware,
-                          post_camera_hook_fn=self.hooks.hookPostCamera,
-                          show_display=self.settings.show_display,
-                          process=self.settings.process,
-                          saving_queue_size=self.settings.saving_queue_size,
-                          debug=self.settings.debug,
-                          core_log_debug=self.settings.core_log_debug,
-                          port=self.settings.port) as acq:
-                acq.acquire(events)
-                dataset = acq.get_dataset()
-
-        else:
-            acq=Acquisition(directory=self.settings.directory,
-                        name=self.settings.name,
-                        image_process_fn=self.hooks.hookImageProcess,
-                        #event_generation_hook_fn=self.hooks.hookEventGeneration,
-                        pre_hardware_hook_fn=self.hooks.hookPreHardware,
-                        post_hardware_hook_fn=self.hooks.hookPostHardware,
-                        post_camera_hook_fn=self.hooks.hookPostCamera,
-                        show_display=self.settings.show_display,
-                        #image_saved_fn=self.hooks.hookImageSaved,
-                        process=self.settings.process,
-                        saving_queue_size=self.settings.saving_queue_size,
-                        debug=self.settings.debug,
-                        core_log_debug=self.settings.core_log_debug,
-                        port=self.settings.port)
-            acq.acquire(events)
-            dataset = acq.get_dataset()
+        self.setHardwareLaserIntensities()
+        acq.acquire(events)
+        dataset = acq.get_dataset()
         return dataset
 
     def getEvents(self):
@@ -420,6 +386,13 @@ class AcquisitionPlugin:
         output=self.hooks.output
         return output
 
+    def setHardwareLaserIntensities(self):
+        if self.laserIntensities:
+            dManager=ExternalDeviceManager()
+            g=Globals()
+            for i in range(self.laserIntensities):
+                dManager.devices[g.KEY_DEVICE_LASERS][i].setLaserPowerInWatts(self.laserIntensities)
+
 
 class AcquisitionBuilder:
     plugin=None
@@ -455,6 +428,9 @@ class AcquisitionBuilder:
         self.plugin.events.channel_group=channelGroup
         self.plugin.events.channels=channels
         self.plugin.events.channel_exposures_ms=exposureMs
+
+    def addLaserIntensities(self,laserIntensities):
+        self.plugin.laserIntensities=laserIntensities
 
     def getEvents(self):
         return self.plugin.getEvents()
@@ -1037,7 +1013,7 @@ class AcquisitionPluginLibrary:
         plugin = builder.getPlugin()
         return plugin
 
-    def xyLooseGrid(self,xRangeROI,yRangeROI,xyOriginROI,calibration=NullCalibration(),timeRange=None,zRange=None,channelRange=None,name='xyLooseGrid',show_display=True):
+    def xyLooseGrid(self,xRangeROI,yRangeROI,xyOriginROI,calibration=NullCalibration(),timeRange=None,zRange=None,channelRange=None,name='xyLooseGrid',show_display=True,emulator=None,laserIntensities=None):
         builder = AcquisitionBuilder()
         if timeRange:
             builder.addTimedEvents(timeRange[0], timeRange[1])
@@ -1045,6 +1021,8 @@ class AcquisitionPluginLibrary:
             builder.addZEvents(zRange[0], zRange[0], zRange[0])
         if channelRange:
             builder.addChannelEvents(channelRange[0], channelRange[1], channelRange[2])
+        if laserIntensities:
+            builder.addLaserIntensities(laserIntensities)
         sequence=[]
         for y in yRangeROI:
             for x in xRangeROI:
@@ -1054,7 +1032,10 @@ class AcquisitionPluginLibrary:
         builder.setEventsOrder('tpzc')
         # build the hooks
         lib = HookSetLibrary()
-        hooks = lib.get('default')
+        if emulator:
+            hooks=lib.get('image_emulator',emulator)
+        else:
+            hooks = lib.get('default')
         builder.linkHooks(hooks)
         # build save location
         builder.setSaveDirectory(None)  # if None env will set as USER DEFAULT FOLDER
