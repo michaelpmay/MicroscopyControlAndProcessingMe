@@ -154,106 +154,98 @@ class APDFunctionLibrary(iAPDSystemLibrary):
 
         def f(self):
             if emulator is not None:
-                self.env.backend.loadAcquisition('image_emulator', emulator)
+                self.backend.loadAcquisition('image_emulator', emulator)
             else:
-                self.env.backend.loadAcquisition('default')
+                self.backend.loadAcquisition('default')
             data={}
             if laserIntensityRGBV:
                 try:
                     for i in range(laserIntensityRGBV):
-                        self.env.backend.devices[g.KEY_DEVICE_LASERS].setLaserPowerInWatts(laserIntensityRGBV[i])
+                        self.backend.devices[g.KEY_DEVICE_LASERS].setLaserPowerInWatts(laserIntensityRGBV[i])
                 except:
                     #print("Warning Setting Laser Failed")
                     pass
             lib=AcquisitionPluginLibrary()
-            self.env.backend.acquisition=lib.xyLooseGrid(xRangeROI,yRangeROI,xyOriginROI,name='exampleMileStone1_Part1',calibration=calibration,show_display=show_display)
-            dataset = self.env.backend.acquireAndReturnDataset()
-            processor = PostProcessor(data=dataset, acq=self.env.backend.acquisition,computer=compute)
+            self.backend.acquisition=lib.xyLooseGrid(xRangeROI,yRangeROI,xyOriginROI,name='exampleMileStone1_Part1',calibration=calibration,show_display=show_display)
+            dataset = self.backend.acquireAndReturnDataset()
+            processor = PostProcessor(data=dataset, acq=self.backend.acquisition,computer=compute)
             processor.add('fovMeanIntensity',isSorted=True)
             processor.add('cellDetectSpotLocationsInRoiDoughnut')
             processor.add('cellDetectNumCellsInRoi',default_flow_threshold = .1,MINIMUM_CELL_AREA = 30,model_type=model_type)
             processed_data = processor.get()
             data.update(processed_data)
             g=Globals()
-            self.env.backend.datamanager[g.DATAKEY_USERDATA].save('milestone1processeddata1.pkl',processed_data)
+            self.backend.datamanager[g.DATAKEY_USERDATA].save('milestone1processeddata1.pkl',processed_data)
             decision = DecisionPickROIFromMask(numCellsThreshold = 1)
             if split_roi:
-                acquisitions=decision.propose(processed_data, self.env.backend.acquisition, zRange=zRange, timeRange=timeRange,channels=channels,split_roi=split_roi)
+                acquisitions=decision.propose(processed_data, self.backend.acquisition, zRange=zRange, timeRange=timeRange,channels=channels,split_roi=split_roi)
                 #print("lenA={0}".format(len(acquisitions)))
                 for i in range(len(acquisitions)):
-                    self.env.backend.acquisition=acquisitions[i]
-                    self.env.backend.acquisition.settings.name = 'exampleMileStone1_Part2_ROI'+str(i)
-                    #print("AcqSeq".format(self.env.backend.acquisition.events.xy_positions))
-                    dataset = self.env.backend.acquireAndReturnDataset()
+                    self.backend.acquisition=acquisitions[i]
+                    self.backend.acquisition.settings.name = 'exampleMileStone1_Part2_ROI'+str(i)
+                    #print("AcqSeq".format(self.backend.acquisition.events.xy_positions))
+                    dataset = self.backend.acquireAndReturnDataset()
 
             else:
-                self.env.backend.acquisition = decision.propose(processed_data, self.env.backend.acquisition,zRange=zRange,timeRange=timeRange,channels=channels)
-                self.env.backend.acquisition.settings.name='exampleMileStone1_Part2'
-                dataset = self.env.backend.acquireAndReturnDataset()
+                self.backend.acquisition = decision.propose(processed_data, self.backend.acquisition,zRange=zRange,timeRange=timeRange,channels=channels)
+                self.backend.acquisition.settings.name='exampleMileStone1_Part2'
+                dataset = self.backend.acquireAndReturnDataset()
             time.sleep(.1)
-            processor = PostProcessor(data=dataset, acq=self.env.backend.acquisition,computer=compute)
+            processor = PostProcessor(data=dataset, acq=self.backend.acquisition,computer=compute)
             processor.add('sharpestZ')
             processed_data = processor.get()
             #print(processed_data)
-            self.env.backend.datamanager[g.DATAKEY_USERDATA].save('milestone1processeddata2.pkl', processed_data)
+            self.backend.datamanager[g.DATAKEY_USERDATA].save('milestone1processeddata2.pkl', processed_data)
             decision=DecisionSelectOptimalZPlaneFromSharpestZ()
-            self.env.backend.acquisition =decision.propose(processed_data, self.env.backend.acquisition)
-            self.env.backend.acquisition.settings.name = 'exampleMileStone1_Part3'
-            dataset = self.env.backend.acquireAndReturnDataset()
+            self.backend.acquisition =decision.propose(processed_data, self.backend.acquisition)
+            self.backend.acquisition.settings.name = 'exampleMileStone1_Part3'
+            dataset = self.backend.acquire(self.backend.acquisition)
             return dataset
 
         pipeline.f = f
         return pipeline
 
-    def findNCellsInGridNoZ(self,xRangeROI,yRangeROI,xyOriginROI,MaxNumCells,channels=None,zRange=None,timeRange=None,laserIntensityRGBV=None,emulator=None,calibration=NullCalibration(),model_type='cyto',compute=DistributedComputeLocal(),show_display=True,split_roi=True):
+    def findNCellsInGridNoZ(self,xRangeROI,yRangeROI,xyOriginROI,MaxNumCells=10,channels=None,zRange=None,timeRange=None,laserIntensityRGBV=None,emulator=None,calibration=NullCalibration(),model_type='cyto',compute=DistributedComputeLocal(),show_display=True,split_roi=True):
         pipeline = APDFunction()
 
         def f(self):
+            g = Globals()
             if emulator is not None:
-                self.env.backend.loadAcquisition('image_emulator', emulator)
+                self.backend.loadAcquisition('image_emulator', emulator)
             else:
-                self.env.backend.loadAcquisition('default')
+                self.backend.loadAcquisition('default')
             data={}
             if laserIntensityRGBV:
                 try:
                     for i in range(laserIntensityRGBV):
-                        self.env.backend.devices[g.KEY_DEVICE_LASERS].setLaserPowerInWatts(laserIntensityRGBV[i])
+                        self.backend.devices[g.KEY_DEVICE_LASERS].setLaserPowerInWatts(laserIntensityRGBV[i])
                 except:
                     #print("Warning Setting Laser Failed")
                     pass
             lib=AcquisitionPluginLibrary()
-            self.env.backend.acquisition=lib.xyLooseGrid(xRangeROI,yRangeROI,xyOriginROI,name='exampleMileStone1_Part1',calibration=calibration,show_display=show_display)
-            currentTime=time.time()
-            dataset = self.env.backend.acquireAndReturnDataset()
-            #print('FindingTime={0}'.format(time.time()-currentTime))
-            processor = PostProcessor(data=dataset, acq=self.env.backend.acquisition,computer=compute)
-            currentTime = time.time()
+            self.backend.acquisition=lib.xyLooseGrid(xRangeROI,yRangeROI,xyOriginROI,name='findNCellsInGridNoZ_Part1',calibration=calibration,show_display=show_display)
+            dataset = self.backend.acquire(self.backend.acquisition)
+            processor = PostProcessor(computer=compute)
             processor.add('fovMeanIntensity',isSorted=True)
             processor.add('cellDetectSpotLocationsInRoiDoughnut')
             processor.add('cellDetectNumCellsInRoi',default_flow_threshold = .1,MINIMUM_CELL_AREA = 30,model_type=model_type)
-            processed_data = processor.get()
-            #print('ProcessingTime={0}'.format(time.time() - currentTime))
+            processed_data = processor.process(dataset,self.backend.acquisition)
             data.update(processed_data)
-            g=Globals()
-            self.env.backend.datamanager[g.DATAKEY_USERDATA].save('findCellsInGridNoZ1.pkl',processed_data)
+            self.backend.datamanager[g.DATAKEY_USERDATA].save('findNCellsInGridNoZ.pkl',processed_data)
             decision = DecisionPickROIFromMask(numCellsThreshold = 1)
-            self.env.backend.acquisition = decision.propose(processed_data, self.env.backend.acquisition,
+            self.backend.acquisition = decision.propose(processed_data, self.backend.acquisition,
                                                             zRange=zRange, timeRange=timeRange, channels=channels,
                                                             maxNumCells=MaxNumCells)
             currentTime = time.time()
             if split_roi:
-                sequence=self.env.backend.acquisition.events.xy_positions
+                sequence=self.backend.acquisition.events.xy_positions
                 for i in range(len(sequence)):
-                    self.env.backend.acquisition.events.xy_positions=[sequence[i]]
-                    self.env.backend.acquisition.settings.name = 'findCellsInGridNoZ2ROI'+str(i)
-                    dataset = self.env.backend.acquireAndReturnDataset()
-                    print(self.env.backend.acquisition.events.xy_positions)
+                    self.backend.acquisition.events.xy_positions=[sequence[i]]
+                    self.backend.acquisition.settings.name = 'findNCellsInGridNoZ_'+str(i)
+                    dataset = self.backend.acquire(self.backend.acquisition)
             else:
-                self.env.backend.acquisition.settings.name = 'findCellsInGridNo2'
-                dataset = self.env.backend.acquireAndReturnDataset()
-                print(self.env.backend.acquisition.events.xy_positions)
-                self.env.backend.acquisition.settings.name='exampleMileStone1_Part2'
-            print('ImagingTime={0}'.format(time.time() - currentTime))
+                self.backend.acquisition.settings.name = 'findNCellsInGridNoZ_Part2'
+                dataset = self.backend.acquire(self.backend.acquisition)
             return dataset
 
         pipeline.f = f
@@ -277,19 +269,19 @@ class APDFunctionLibrary(iAPDSystemLibrary):
             lib=AcquisitionPluginLibrary()
             self.backend.acquisition=lib.xyLooseGrid(xRangeROI,yRangeROI,xyOriginROI,name='exampleMileStone1_Part1',calibration=calibration)
             print(self.backend.acquisition.events.xy_positions)
-            dataset = self.backend.acquireAndReturnDataset()
+            dataset = self.backend.acquire(self.backend.acquisition)
             processor = PostProcessor()
             processor.add('cellDetectSpotLocationsInRoiDoughnut',sigma=[3,8])
             processor.add('cellDetectNumCellsInRoi',default_flow_threshold = .1,MINIMUM_CELL_AREA = 30,model_type=model_type)
-            processor.process(dataset, self.env.backend.acquisition)
+            processor.process(dataset, self.backend.acquisition)
             processed_data = processor.get()
 
             self.backend.datamanager[g.DATAKEY_USERDATA].save('findTranscriptionSitesInGrid1.pkl',processed_data)
             decision = DecisionPickROIFromXYSpotLocations(numCellsThreshold = 1)
-            self.backend.acquisition = decision.propose(processed_data, self.env.backend.acquisition,zRange=zRange,timeRange=timeRange,channels=channels)
+            self.backend.acquisition = decision.propose(processed_data, self.backend.acquisition,zRange=zRange,timeRange=timeRange,channels=channels)
             print(self.backend.acquisition.events.xy_positions)
             self.backend.acquisition.settings.name='findTranscriptionSitesInGrid2'
-            dataset = self.backend.acquireAndReturnDataset()
+            dataset = self.backend.acquire(self.backend.acquisition)
             return dataset
 
 
@@ -301,24 +293,24 @@ class APDFunctionLibrary(iAPDSystemLibrary):
 
         def f(self):
             if emulator is not None:
-                self.env.backend.loadAcquisition('image_emulator', emulator)
+                self.backend.loadAcquisition('image_emulator', emulator)
             else:
-                self.env.backend.loadAcquisition('default')
+                self.backend.loadAcquisition('default')
             g = Globals()
             if laserIntensityRGBV:
                 try:
                     for i in range(laserIntensityRGBV):
-                        self.env.backend.devices[g.KEY_DEVICE_LASERS].setLaserPowerInWatts(laserIntensityRGBV[i])
+                        self.backend.devices[g.KEY_DEVICE_LASERS].setLaserPowerInWatts(laserIntensityRGBV[i])
                 except:
                     print("Warning Setting Laser Failed")
             lib=AcquisitionPluginLibrary()
-            self.env.backend.acquisition=lib.xyLooseGrid(xRangeROI,yRangeROI,xyOriginROI,name='findNumCells_Part1',calibration=calibration,show_display=show_display)
-            dataset = self.env.backend.acquireAndReturnDataset()
-            processor = PostProcessor(data=dataset, acq=self.env.backend.acquisition,computer=compute)
+            self.backend.acquisition=lib.xyLooseGrid(xRangeROI,yRangeROI,xyOriginROI,name='findNumCells_Part1',calibration=calibration,show_display=show_display)
+            dataset = self.backend.acquireAndReturnDataset()
+            processor = PostProcessor(computer=compute)
             processor.add('cellDetectNumCellsInRoi',default_flow_threshold = .1,MINIMUM_CELL_AREA = 30,model_type=model_type)
-            processed_data = processor.get()
-            print('DetectedNumCells={0}'.format(processed_data['cellDetectNumCellsInRoi']['numcells']))
-            print('DetectedIndex={0}'.format(processed_data['cellDetectNumCellsInRoi']['index']))
+            processed_data = processor.process(dataset,self.backend.acquisition)
+            #print('DetectedNumCells={0}'.format(processed_data['cellDetectNumCellsInRoi']['numcells']))
+            #print('DetectedIndex={0}'.format(processed_data['cellDetectNumCellsInRoi']['index']))
             return processed_data
         pipeline.f = f
         return pipeline
@@ -342,37 +334,29 @@ class APDFunctionLibrary(iAPDSystemLibrary):
                     print("Warning Setting Laser Failed")
             lib = AcquisitionPluginLibrary()
             self.backend.acquisition = lib.xyLooseGrid(xRangeROI, yRangeROI, xyOriginROI,
-                                                           name='exampleMileStone1_Part1', calibration=calibration,
+                                                           name='findNPunctaInGridNoZ_Part1', calibration=calibration,
                                                            show_display=show_display)
-            currentTime = time.time()
-            dataset = self.backend.acquireAndReturnDataset()
-            print('FindingTime={0}'.format(time.time() - currentTime))
-            processor = PostProcessor(data=dataset, acq=self.env.backend.acquisition, computer=compute)
-            currentTime = time.time()
+            dataset = self.backend.acquire(self.backend.acquisition)
+            processor = PostProcessor(computer=compute)
             processor.add('fovMeanIntensity', isSorted=True)
             processor.add('SpotDetectImagesBooleanDoughnut',threshold=threshold)
-            processed_data = processor.get()
-            print('ProcessingTime={0}'.format(time.time() - currentTime))
+            processed_data=processor.process(dataset, self.backend.acquisition)
             data.update(processed_data)
             g = Globals()
-            self.env.backend.datamanager[g.DATAKEY_USERDATA].save('findCellsInGridNoZ1.pkl', processed_data)
+            self.backend.datamanager[g.DATAKEY_USERDATA].save('findNPunctaInGridNoZ.pkl', processed_data)
             decision = DecisionPickXYROIFromDetectionBoolean()
-            self.env.backend.acquisition = decision.propose(processed_data, self.env.backend.acquisition,
+            self.backend.acquisition = decision.propose(processed_data, self.backend.acquisition,
                                                             zRange=zRange, timeRange=timeRange, channels=channels)
-            currentTime = time.time()
             if split_roi:
-                sequence = self.env.backend.acquisition.events.xy_positions
+                sequence = self.backend.acquisition.events.xy_positions
                 for i in range(len(sequence)):
-                    self.env.backend.acquisition.events.xy_positions = [sequence[i]]
-                    self.env.backend.acquisition.settings.name = 'findCellsInGridNoZ2ROI' + str(i)
-                    dataset = self.env.backend.acquireAndReturnDataset()
-                    print(self.env.backend.acquisition.events.xy_positions)
+                    self.backend.acquisition.events.xy_positions = [sequence[i]]
+                    self.backend.acquisition.settings.name = 'findNPunctaInGridNoZ' + str(i)
+                    dataset = self.backend.acquire(self.backend.acquisition)
             else:
-                self.env.backend.acquisition.settings.name = 'findCellsInGridNo2'
-                dataset = self.env.backend.acquireAndReturnDataset()
-                print(self.env.backend.acquisition.events.xy_positions)
-                self.env.backend.acquisition.settings.name = 'exampleMileStone1_Part2'
-            print('ImagingTime={0}'.format(time.time() - currentTime))
+                self.backend.acquisition.settings.name = 'findNPunctaInGridNoZ'
+                dataset = self.backend.acquire(self.backend.acquisition)
+                self.backend.acquisition.settings.name = 'findNPunctaInGridNoZ_Part2'
             return dataset
 
         pipeline.f = f
@@ -383,50 +367,49 @@ class APDFunctionLibrary(iAPDSystemLibrary):
 
         def f(self):
             if emulator is not None:
-                self.env.backend.loadAcquisition('image_emulator', emulator)
+                self.backend.loadAcquisition('image_emulator', emulator)
             else:
-                self.env.backend.loadAcquisition('default')
+                self.backend.loadAcquisition('default')
             data={}
             if laserIntensityRGBV:
                 try:
                     for i in range(laserIntensityRGBV):
-                        self.env.backend.devices[g.KEY_DEVICE_LASERS].setLaserPowerInWatts(laserIntensityRGBV[i])
+                        self.backend.devices[g.KEY_DEVICE_LASERS].setLaserPowerInWatts(laserIntensityRGBV[i])
                 except:
                     print("Warning Setting Laser Failed")
             lib=AcquisitionPluginLibrary()
-            self.env.backend.acquisition=lib.xyLooseGrid(xRangeROI,yRangeROI,xyOriginROI,name='exampleMileStone1_Part1',calibration=calibration,show_display=show_display)
-            dataset = self.env.backend.acquireAndReturnDataset()
-            processor = PostProcessor(data=dataset, acq=self.env.backend.acquisition,computer=compute)
+            self.backend.acquisition=lib.xyLooseGrid(xRangeROI,yRangeROI,xyOriginROI,name='findPunctaInGrid_Part1',calibration=calibration,show_display=show_display)
+            dataset = self.backend.acquireAndReturnDataset()
+            processor = PostProcessor(computer=compute)
             processor.add('fovMeanIntensity',isSorted=True)
             processor.add('cellDetectSpotLocationsInRoiDoughnut')
-            processed_data = processor.get()
+            processed_data = processor.process(dataset, self.backend.acquisition)
             data.update(processed_data)
             g=Globals()
-            self.env.backend.datamanager[g.DATAKEY_USERDATA].save('milestone1processeddata1.pkl',processed_data)
+            self.backend.datamanager[g.DATAKEY_USERDATA].save('findPunctaInGrid.pkl',processed_data)
             decision = DecisionPickROIFromXYSpotLocations()
             if split_roi:
-                acquisitions=decision.propose(processed_data, self.env.backend.acquisition, zRange=zRange, timeRange=timeRange,channels=channels,split_roi=split_roi)
+                acquisitions=decision.propose(processed_data, self.backend.acquisition, zRange=zRange, timeRange=timeRange,channels=channels,split_roi=split_roi)
                 print("lenA={0}".format(len(acquisitions)))
                 for i in range(len(acquisitions)):
-                    self.env.backend.acquisition=acquisitions[i]
-                    self.env.backend.acquisition.settings.name = 'exampleMileStone1_Part2_ROI'+str(i)
-                    print("AcqSeq".format(self.env.backend.acquisition.events.xy_positions))
-                    dataset = self.env.backend.acquireAndReturnDataset()
+                    self.backend.acquisition=acquisitions[i]
+                    self.backend.acquisition.settings.name = 'findPunctaInGrid_Part2_ROI'+str(i)
+                    print("AcqSeq".format(self.backend.acquisition.events.xy_positions))
+                    dataset = self.backend.acquireAndReturnDataset()
 
             else:
-                self.env.backend.acquisition = decision.propose(processed_data, self.env.backend.acquisition,zRange=zRange,timeRange=timeRange,channels=channels)
-                self.env.backend.acquisition.settings.name='exampleMileStone1_Part2'
-                dataset = self.env.backend.acquireAndReturnDataset()
+                self.backend.acquisition = decision.propose(processed_data, self.backend.acquisition,zRange=zRange,timeRange=timeRange,channels=channels)
+                self.backend.acquisition.settings.name='findPunctaInGrid_Part2'
+                dataset = self.backend.acquireAndReturnDataset()
             time.sleep(.1)
-            processor = PostProcessor(data=dataset, acq=self.env.backend.acquisition,computer=compute)
+            processor = PostProcessor(computer=compute)
             processor.add('sharpestZ')
-            processed_data = processor.get()
-            print(processed_data)
-            self.env.backend.datamanager[g.DATAKEY_USERDATA].save('milestone1processeddata2.pkl', processed_data)
+            processed_data = processor.get(dataset,self.backend.acquisition)
+            self.backend.datamanager[g.DATAKEY_USERDATA].save('findPunctaInGrid2.pkl', processed_data)
             decision=DecisionSelectOptimalZPlaneFromSharpestZ()
-            self.env.backend.acquisition =decision.propose(processed_data, self.env.backend.acquisition)
-            self.env.backend.acquisition.settings.name = 'exampleMileStone1_Part3'
-            dataset = self.env.backend.acquireAndReturnDataset()
+            self.backend.acquisition =decision.propose(processed_data, self.backend.acquisition)
+            self.backend.acquisition.settings.name = 'findPunctaInGrid_Part3'
+            dataset = self.backend.acquire(self.backend.acquisition)
             return dataset
 
         pipeline.f = f
@@ -437,51 +420,51 @@ class APDFunctionLibrary(iAPDSystemLibrary):
 
         def f(self):
             if emulator is not None:
-                self.env.backend.loadAcquisition('image_emulator', emulator)
+                self.backend.loadAcquisition('image_emulator', emulator)
             else:
-                self.env.backend.loadAcquisition('default')
+                self.backend.loadAcquisition('default')
             data={}
             if laserIntensityRGBV:
                 try:
                     for i in range(laserIntensityRGBV):
-                        self.env.backend.devices[g.KEY_DEVICE_LASERS].setLaserPowerInWatts(laserIntensityRGBV[i])
+                        self.backend.devices[g.KEY_DEVICE_LASERS].setLaserPowerInWatts(laserIntensityRGBV[i])
                 except:
                     print("Warning Setting Laser Failed")
             lib=AcquisitionPluginLibrary()
-            self.env.backend.acquisition=lib.xyLooseGrid(xRangeROI,yRangeROI,xyOriginROI,name='exampleMileStone1_Part1',calibration=calibration,show_display=show_display)
-            dataset = self.env.backend.acquireAndReturnDataset()
-            processor = PostProcessor(data=dataset, acq=self.env.backend.acquisition,computer=compute)
+            self.backend.acquisition=lib.xyLooseGrid(xRangeROI,yRangeROI,xyOriginROI,name='exampleMileStone1_Part1',calibration=calibration,show_display=show_display)
+            dataset = self.backend.acquireAndReturnDataset()
+            processor = PostProcessor(data=dataset, acq=self.backend.acquisition,computer=compute)
             processor.add('fovMeanIntensity',isSorted=True)
             processor.add('cellDetectSpotLocationsInRoiDoughnut')
             processor.add('cellDetectNumCellsInRoi',default_flow_threshold = .1,MINIMUM_CELL_AREA = 30,model_type=model_type)
             processed_data = processor.get()
             data.update(processed_data)
             g=Globals()
-            self.env.backend.datamanager[g.DATAKEY_USERDATA].save('milestone1processeddata1.pkl',processed_data)
+            self.backend.datamanager[g.DATAKEY_USERDATA].save('milestone1processeddata1.pkl',processed_data)
             decision = DecisionPickROIFromMask(numCellsThreshold = 1)
             if split_roi:
-                acquisitions=decision.propose(processed_data, self.env.backend.acquisition, zRange=zRange, timeRange=timeRange,channels=channels,split_roi=split_roi)
+                acquisitions=decision.propose(processed_data, self.backend.acquisition, zRange=zRange, timeRange=timeRange,channels=channels,split_roi=split_roi)
                 print("lenA={0}".format(len(acquisitions)))
                 for i in range(len(acquisitions)):
-                    self.env.backend.acquisition=acquisitions[i]
-                    self.env.backend.acquisition.settings.name = 'exampleMileStone1_Part2_ROI'+str(i)
-                    print("AcqSeq".format(self.env.backend.acquisition.events.xy_positions))
-                    dataset = self.env.backend.acquireAndReturnDataset()
+                    self.backend.acquisition=acquisitions[i]
+                    self.backend.acquisition.settings.name = 'exampleMileStone1_Part2_ROI'+str(i)
+                    print("AcqSeq".format(self.backend.acquisition.events.xy_positions))
+                    dataset = self.backend.acquireAndReturnDataset()
 
             else:
-                self.env.backend.acquisition = decision.propose(processed_data, self.env.backend.acquisition,zRange=zRange,timeRange=timeRange,channels=channels)
-                self.env.backend.acquisition.settings.name='exampleMileStone1_Part2'
-                dataset = self.env.backend.acquireAndReturnDataset()
+                self.backend.acquisition = decision.propose(processed_data, self.backend.acquisition,zRange=zRange,timeRange=timeRange,channels=channels)
+                self.backend.acquisition.settings.name='exampleMileStone1_Part2'
+                dataset = self.backend.acquireAndReturnDataset()
             time.sleep(.1)
-            processor = PostProcessor(data=dataset, acq=self.env.backend.acquisition,computer=compute)
+            processor = PostProcessor(data=dataset, acq=self.backend.acquisition,computer=compute)
             processor.add('fishPipeline')
             processed_data = processor.get()
             print(processed_data)
-            self.env.backend.datamanager[g.DATAKEY_USERDATA].save('milestone1processeddata2.pkl', processed_data)
+            self.backend.datamanager[g.DATAKEY_USERDATA].save('milestone1processeddata2.pkl', processed_data)
             decision=DecisionSelectOptimalZPlaneFromSharpestZ()
-            self.env.backend.acquisition =decision.propose(processed_data, self.env.backend.acquisition)
-            self.env.backend.acquisition.settings.name = 'exampleMileStone1_Part3'
-            dataset = self.env.backend.acquireAndReturnDataset()
+            self.backend.acquisition =decision.propose(processed_data, self.backend.acquisition)
+            self.backend.acquisition.settings.name = 'exampleMileStone1_Part3'
+            dataset = self.backend.acquireAndReturnDataset()
             return dataset
 
         pipeline.f = f

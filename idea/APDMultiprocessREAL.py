@@ -23,12 +23,8 @@ ViewToStageXYROICalibrator.setMatrix([[.06*2000,0],[0,.06*2000]])
 ViewToStageXYROICalibrator.setZero([0,0])
 currentTime=time.time()
 
-#apdFunction=lib.findNumCells(xROIRange,yROIRange,xyROIOrigin,ROIImSize,channels=['Filter',['Red', 'Green'],[100.,100.]],
-#laserIntensityRGBV=None,zRange=None,timeRange=None,emulator=None,compute=compute,model_type='cyto',calibration=ViewToStageXYROICalibrator,show_display=False)
-#apd.run(apdFunction)
-
 maxNumCells=100
-apdFunction=lib.findNPunctaInGridNoZ(xROIRange,yROIRange,xyROIOrigin,channels=['Filter',['Green', 'Blue'],[100.,100.]],
-laserIntensityRGBV=None,zRange=[-3.,3.,.5],timeRange=None,emulator=None,compute=compute,threshold=0,calibration=ViewToStageXYROICalibrator,show_display=False,split_roi=False)
+apdFunction=lib.findNCellsInGridNoZ(xROIRange,yROIRange,xyROIOrigin,channels=['Filter',['Green', 'Blue'],[100.,100.]],
+laserIntensityRGBV=None,zRange=[-3.,3.,.5],timeRange=None,emulator=None,compute=compute,calibration=ViewToStageXYROICalibrator,show_display=False,split_roi=False)
 apd.runFunction(apdFunction)
 print(time.time()-currentTime)

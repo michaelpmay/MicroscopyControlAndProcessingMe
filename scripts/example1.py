@@ -1,19 +1,21 @@
 from source.apd import *
 from source.image_emulator import ImageEmulator2Channel
 from source.distributed_computing import DistributedComputeDaskTask
-apdSystem=APDSystem(rootDataFolder=os.path.join(''),configFileName='myConfig.cfg',user='default')
+apdSystem = APDSystem(rootDataFolder=os.path.join(''),
+                    configFileName='myConfig.cfg',
+                    user='default')
 
 # IMage Settings to Acquire a grid of images
-numROIXYSteps=4
-xROIRange=[0,1,2]*512
-yROIRange=[0,1,2]*512
-xyROIOrigin=[0,0]
-ROIImSize=[512,512]
+numROIXYSteps = 4
+xROIRange = [0, 1, 2]*512
+yROIRange = [0, 1, 2]*512
+xyROIOrigin = [0, 0]
+ROIImSize = [512, 512]
 
 # Settings for Image Emulation
-emulator=ImageEmulator2Channel()
+emulator = ImageEmulator2Channel()
 emulator.setXYImageSize(ROIImSize)
-numCellsSimulated=50
+numCellsSimulated = 50
 canvasSizeXY=[512*numROIXYSteps,512*numROIXYSteps]
 emulator.simulatePositions(canvasSizeXY,numCellsSimulated)
 
