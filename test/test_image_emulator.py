@@ -57,7 +57,7 @@ class TestImageEmulator2Channel(TestCase):
     def test_generateSimulatedPositions_returnsNumpyArray(self):
         position=[0,0]
         imSize=[512,512]
-        imagePixSizeXY = [50,50]
+        imagePixSizeXY = [1000,1000]
         numCellsSimulated = 3
         self.object.simulatePositions(imagePixSizeXY, numCellsSimulated)
         self.object.setXYImageSize(imSize)

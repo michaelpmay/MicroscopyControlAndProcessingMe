@@ -13,8 +13,8 @@ class TestAPDSystem(TestCase):
     def setUp(self) -> None:
         self.object=APDSystem()
         self.function=APDFunction()
-    def test_run_returnsValue(self):
-        self.object.run(self.function)
+    def test_runFunction_returnsValue(self):
+        self.object.runFunction(self.function)
 
 class TestAPDFunctionLibrary(TestCase):
     def setUp(self) -> None:

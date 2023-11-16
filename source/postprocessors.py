@@ -4,6 +4,7 @@ import numpy as np
 from scipy.signal import convolve2d
 from source.image_process import CellDetectorCellMask, SpotCountLocations, SpotCounter, SpotCountLocationsDoughnut,SpotDetectImagesBooleanDoughnut,ImageCalculateFishPipeline
 from source.distributed_computing import Task,DistributedComputeDaskTask,DistributedComputeLocal
+from ndtiff import NDTiffDataset
 class iPostProcessor:
     def add(self,key,*args,**kwargs):
         '''add a process which will generate tasks'''
@@ -28,6 +29,7 @@ class PostProcessor:
         self.output={}
         self.acq=None
         self.computer=computer
+
     def add(self, key, *args, **kwargs):
         lib = PostProcessLibrary()
         processor=lib.get(key, *args, **kwargs)
@@ -35,10 +37,11 @@ class PostProcessor:
         #data=processor.process(self.data,self.acq)
         #self.output.update(data)
 
-    def get(self):
-        return self.output
-
     def process(self,data,acq):
+        if not isinstance(acq,AcquisitionPlugin):
+            raise TypeError
+        if not isinstance(self,PostProcessor):
+            raise TypeError
         output={}
         for i in range(len(self.tasks)):
             output.update(self.tasks[i].process(data,acq))
@@ -57,6 +60,8 @@ class PostProcessNode(iPostProcess):
             self.computer=DistributedComputeLocal()
 
     def process(self,dataset,acq,*args,**kwargs):
+        if not isinstance(acq,AcquisitionPlugin):
+            raise TypeError
         return self.function(self,dataset,acq,*args,**kwargs)
 
 class PostProcessLibrary():
@@ -77,16 +82,16 @@ class PostProcessLibrary():
             data['null']=()
             return data
         node=PostProcessNode(computer=self.computer)
-        node.process=function
+        node.function=function
         return node
 
     def source(self):
-        def function(self,dataset,acq,*args,**kwargs):
-            data={}
-            data['source']=dataset
+        def function(self, dataset, acq, *args, **kwargs):
+            data = {}
+            data['source'] = dataset
             return data
-        node=PostProcessNode(computer=self.computer)
-        node.process=function
+        node = PostProcessNode(computer=self.computer)
+        node.function = function
         return node
 
     def fovMeanIntensity(self,isSorted=False):
@@ -96,9 +101,9 @@ class PostProcessLibrary():
             tasks=[]
             def function(image,index):
                 return np.mean(image)
+
             darray=dataset.as_array()
             d = np.array(darray)
-            acq_type_dims = dataset.axes.keys()
             acq_len_dims = d.shape[:-2]
             meanIntensity = np.zeros(acq_len_dims)
             if len(acq_len_dims) == 1:
