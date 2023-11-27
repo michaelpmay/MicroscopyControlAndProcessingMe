@@ -1,4 +1,4 @@
-from source.apd import *
+from apd import *
 from unittest import TestCase
 
 class TestAPDFunction(TestCase):

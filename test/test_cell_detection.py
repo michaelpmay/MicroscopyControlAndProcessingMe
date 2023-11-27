@@ -1,15 +1,15 @@
 import unittest
-from source.cell_detection import *
-import source.data_manager
-import source.globals
+from cell_detection import *
+import data_manager
+import globals
 import os
 class TestCellDetectorThreshold(unittest.TestCase):
     def testDomain(self):
-        g=source.globals.Globals()
+        g=globals.Globals()
         detector=CellDetectorThreshold()
         detector.threshold=2000
-        dmanager=source.data_manager.DataManager()
-        dmanager.storage=source.data_manager.DataStorageLocal(folder=os.path.join('data','test'))
+        dmanager=data_manager.DataManager()
+        dmanager.storage=data_manager.DataStorageLocal(folder=os.path.join('data','test'))
         image=dmanager.load('testimage.jpg')
         detector.detect(image)
         pass
@@ -24,8 +24,8 @@ class TestCellMaskHistogramThreshold(unittest.TestCase):
     def testDomain(self):
         detector = CellDetectHistogramThreshold()
         detector.threshold = 2000
-        dmanager = source.data_manager.DataManager()
-        dmanager.storage = source.data_manager.DataStorageLocal(folder=os.path.join('data','test'))
+        dmanager = data_manager.DataManager()
+        dmanager.storage = data_manager.DataStorageLocal(folder=os.path.join('data','test'))
         image = dmanager.load('testimage.jpg')
         detector.detect(image)
         pass
@@ -42,8 +42,8 @@ class TestCellDetectorCellpose(unittest.TestCase):
     def testDomain(self):
         detector = CellDetectorCellpose(dims=(32,32))
         detector.threshold = 2000
-        dmanager = source.data_manager.DataManager()
-        dmanager.storage = source.data_manager.DataStorageLocal(folder=os.path.join('data','test'))
+        dmanager = data_manager.DataManager()
+        dmanager.storage = data_manager.DataStorageLocal(folder=os.path.join('data','test'))
         image = dmanager.load('testimage.jpg')
         detector.detect(image)
         pass
@@ -61,8 +61,8 @@ class TestCellMaskCellpose(unittest.TestCase):
     def testDomain(self):
         detector = CellMaskCellpose(dims=(32,32))
         detector.threshold = 2000
-        dmanager = source.data_manager.DataManager()
-        dmanager.storage = source.data_manager.DataStorageLocal(folder=os.path.join('data','test'))
+        dmanager = data_manager.DataManager()
+        dmanager.storage = data_manager.DataStorageLocal(folder=os.path.join('data','test'))
         image = dmanager.load('testimage.jpg')
         detector.detect(image)
         pass

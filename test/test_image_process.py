@@ -1,7 +1,7 @@
 from unittest import TestCase
-from source.image_process import *
+from image_process import *
 import numpy as np
-import source.data_manager as d
+import data_manager as d
 import cv2
 import os
 from PIL import Image

@@ -1,5 +1,5 @@
 from unittest import TestCase
-from source.verbosity import *
+from verbosity import *
 class TestReportFull(TestCase):
     def setUp(self) -> None:
         self.object=ReportFull()

@@ -1,7 +1,7 @@
-from source.layers import AnalysisLayer
-from source.image_emulator import *
-from source.distributed_computing import *
-from source.apd import *
+from layers import AnalysisLayer
+from image_emulator import *
+from distributed_computing import *
+from apd import *
 import  matplotlib.pyplot as plt
 
 class AnalysisLayerPythonAutomation(AnalysisLayer):

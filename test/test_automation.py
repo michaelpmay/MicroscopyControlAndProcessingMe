@@ -1,6 +1,6 @@
 import sqlite3.dbapi2
 import unittest
-from source.automation import *
+from automation import *
 
 class TestBlock(unittest.TestCase):
     def TestInterface(self):

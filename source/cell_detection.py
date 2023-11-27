@@ -1,6 +1,6 @@
 import warnings
 from skimage.measure import regionprops
-from source.image_process import *
+from image_process import *
 from cellpose import models
 from cv2 import resize
 class iBooleanClassifier:

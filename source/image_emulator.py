@@ -10,7 +10,7 @@ import pathlib
 import re
 from scipy.ndimage import gaussian_filter
 import pickle
-from source.data_manager import DataManager
+from data_manager import DataManager
 class iImageEmulator:
     '''parses events and creates a simualetd image'''
     def generate(self,position,n=20,channelIndex=None):

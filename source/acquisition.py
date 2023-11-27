@@ -1,8 +1,8 @@
 import numpy as np
 from pycromanager import *
-from source.hooks import *
-from source.calibration import NullCalibration
-from source.devices import ExternalDeviceManager
+from hooks import *
+from calibration import NullCalibration
+from devices import ExternalDeviceManager
 class iEventsTicket:
     '''big object holds the parameters for building events'''
     pass

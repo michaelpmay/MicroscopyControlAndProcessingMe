@@ -1,9 +1,9 @@
-from source.acquisition import AcquisitionPlugin
+from acquisition import AcquisitionPlugin
 from itertools import permutations
 import numpy as np
 from scipy.signal import convolve2d
-from source.image_process import CellDetectorCellMask, SpotCountLocations, SpotCounter, SpotCountLocationsDoughnut,SpotDetectImagesBooleanDoughnut,ImageCalculateFishPipeline
-from source.distributed_computing import Task,DistributedComputeDaskTask,DistributedComputeLocal
+from image_process import CellDetectorCellMask, SpotCountLocations, SpotCounter, SpotCountLocationsDoughnut,SpotDetectImagesBooleanDoughnut,ImageCalculateFishPipeline
+from distributed_computing import Task,DistributedComputeDaskTask,DistributedComputeLocal
 from ndtiff import NDTiffDataset
 class iPostProcessor:
     def add(self,key,*args,**kwargs):

@@ -1,8 +1,8 @@
 import numpy as np
 
-from source.data_manager import *
-from source.globals import *
-from source.calibration import *
+from data_manager import *
+from globals import *
+from calibration import *
 g=Globals()
 dataManager=DataStorageLocal()
 dataManager.initialize(g.DATA_FOLDER)

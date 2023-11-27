@@ -1,5 +1,5 @@
 from unittest import TestCase
-from source.utility import *
+from utility import *
 
 class TestZSearchXYPositionOptimizerGreedy(TestCase):
     def setUp(self) -> None:

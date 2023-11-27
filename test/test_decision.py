@@ -1,6 +1,6 @@
 from unittest import TestCase
-from source.decision import *
-from source.acquisition import AcquisitionPlugin
+from decision import *
+from acquisition import AcquisitionPlugin
 from pycromanager import Dataset
 class TestDecisionRepeatAcquisition(TestCase):
     def setUp(self) -> None:

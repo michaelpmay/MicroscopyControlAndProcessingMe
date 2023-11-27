@@ -1,21 +1,21 @@
 import os.path
 
-import source.data_manager as d
-import source.acquisition as a
-import source.globals as g
-import source.human_interface as i
-import source.devices as dv
-import source.authentication as auth
-import source.calibration as c
+import data_manager as d
+import acquisition as a
+import globals as g
+import human_interface as i
+import devices as dv
+import authentication as auth
+import calibration as c
 import time
 from datetime import datetime
-from source.calibration import MatrixMultiCalibration
+from calibration import MatrixMultiCalibration
 from pycromanager import Acquisition
 from datetime import datetime
-from source.verbosity import Verbosity,ReportFull,ReportSilent
+from verbosity import Verbosity,ReportFull,ReportSilent
 from skimage import io
-from source.globals import Globals
-from source.hooks import HookSetLibrary
+from globals import Globals
+from hooks import HookSetLibrary
 class iBackend:
     '''master control of modules'''
     def setUser(self,username=None,password=None):

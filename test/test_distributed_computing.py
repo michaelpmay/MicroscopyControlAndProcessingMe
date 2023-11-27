@@ -1,5 +1,5 @@
 from unittest import TestCase
-from source.distributed_computing import *
+from distributed_computing import *
 
 class TestTask(TestCase):
     def setUp(self) -> None:

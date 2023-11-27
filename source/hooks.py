@@ -1,4 +1,4 @@
-from source.globals import Globals
+from globals import Globals
 from scipy.signal import convolve2d
 import numpy as np
 import scipy

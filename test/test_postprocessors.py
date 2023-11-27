@@ -1,5 +1,5 @@
 from unittest import TestCase
-from source.postprocessors import *
+from postprocessors import *
 import imageio
 from ndtiff import NDTiffDataset
 class TestPostProcessNode(TestCase):

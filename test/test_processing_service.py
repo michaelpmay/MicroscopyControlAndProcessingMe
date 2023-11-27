@@ -1,6 +1,6 @@
 from unittest import TestCase
-from source.processing_service import *
-from source.data_manager import DataManager
+from processing_service import *
+from data_manager import DataManager
 import cv2
 import os
 class TestImageProcessAPI(TestCase):

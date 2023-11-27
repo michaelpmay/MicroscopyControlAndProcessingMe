@@ -1,6 +1,6 @@
 import unittest
-from source.authentication import *
-from source.globals import *
+from authentication import *
+from globals import *
 class testUser(unittest.TestCase):
     def testUser(self):
         user = User("mpmay")

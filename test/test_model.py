@@ -1,6 +1,6 @@
 import numpy as np
 
-from source.model import *
+from model import *
 from unittest import TestCase
 
 class TestCoordinateMap(TestCase):

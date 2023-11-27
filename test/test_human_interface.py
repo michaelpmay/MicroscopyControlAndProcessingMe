@@ -1,5 +1,5 @@
 import unittest
-from source.human_interface import *
+from human_interface import *
 answer=True# if this is None, it enables interaction
 
 class TestRequestComponentBox(unittest.TestCase):

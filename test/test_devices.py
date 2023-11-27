@@ -1,4 +1,4 @@
-from source.devices import *
+from devices import *
 import unittest
 class TestSerial(unittest.TestCase):
     def setUp(self) -> None:

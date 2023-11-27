@@ -1,4 +1,4 @@
-from source.image_process import SpotCountLocationsDoughnut,CellDetectorCellMask,SpotCountCellFrequency
+from image_process import SpotCountLocationsDoughnut,CellDetectorCellMask,SpotCountCellFrequency
 import tifffile
 from skimage import io
 import matplotlib.pyplot as plt

@@ -1,8 +1,8 @@
 import os
 import serial
-import source.globals as g
+import globals as g
 from serial.tools import list_ports
-from source.calibration import MatrixCalibration
+from calibration import MatrixCalibration
 import numpy as np
 class iSerial:
     '''defines functions for connecting to serial port. Serials must also be singletons!'''

@@ -1,8 +1,8 @@
-from source.acquisition import AcquisitionPlugin
-from source.image_process import CellDetectorCellMask
-from source.model import Model
+from acquisition import AcquisitionPlugin
+from image_process import CellDetectorCellMask
+from model import Model
 import numpy as np
-from source.utility import ZPlaneEstimator,ZSearchXYPositionOptimizerFull,ZSearchXYPositionOptimizerGreedy
+from utility import ZPlaneEstimator,ZSearchXYPositionOptimizerFull,ZSearchXYPositionOptimizerGreedy
 class iDecision:
     def propose(self,processed_data,acquisition):
         '''take old acquisition and processed data dictionary and propose a new experiment'''

@@ -1,4 +1,4 @@
-from source.hooks import *
+from hooks import *
 from unittest import TestCase
 
 class TestHook(TestCase):

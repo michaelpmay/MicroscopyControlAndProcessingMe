@@ -3,7 +3,7 @@ from unittest import TestCase
 
 import pandas as pd
 
-from source.image_emulator import *
+from image_emulator import *
 from os import path
 import numpy as np
 import matplotlib.pyplot as plt

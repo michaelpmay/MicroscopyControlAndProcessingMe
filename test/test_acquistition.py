@@ -1,5 +1,5 @@
-from source.acquisition import *
-from source.globals import Globals as g
+from acquisition import *
+from globals import Globals as g
 import unittest
 
 class TestEventsBuilder(unittest.TestCase):

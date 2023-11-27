@@ -1,5 +1,5 @@
 from unittest import TestCase
-from source.automation_service import *
+from automation_service import *
 class TestAutomationAPI(TestCase):
     def test0(self):
         list=listAvailableAcquisitions()

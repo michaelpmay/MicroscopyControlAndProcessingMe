@@ -1,9 +1,8 @@
 import unittest
-import os
-from source.calibration import *
-from source.data_manager import *
+from calibration import *
+from data_manager import *
 
-from source.data_manager import DataManager
+from data_manager import DataManager
 class TestMatrixCalibration(unittest.TestCase):
     def testDomain(self):
         calibration=MatrixCalibration()
@@ -39,7 +38,7 @@ class TestMatrixMultiCalibration(unittest.TestCase):
     def testDomain(self):
         multiCalibration=MatrixMultiCalibration()
         multiCalibration2=MatrixMultiCalibration()
-        self.assertIs(multiCalibration,multiCalibration2)
+        self.assertIs(multiCalibration,multiCalibration2) # is singleton
         calibration=MatrixCalibration()
         calibration.setMatrix([[1,0],[0,1]])
         calibration.setZero([0,0])

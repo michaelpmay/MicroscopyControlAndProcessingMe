@@ -1,7 +1,7 @@
 # START
 from fastapi import FastAPI
 from pydantic import BaseModel
-from source.environment import *
+from environment import *
 app = FastAPI()
 verbosity=Verbosity()
 

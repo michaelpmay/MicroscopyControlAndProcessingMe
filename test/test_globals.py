@@ -1,4 +1,4 @@
-from source.globals import *
+from globals import *
 import unittest
 class TestGlobals(unittest.TestCase):
     def testDomain(self):

@@ -1,5 +1,5 @@
 import numpy as np
-from source.globals import Globals
+from globals import Globals
 g=Globals('config.txt')
 class iCalibration:
     def map(self,position):

@@ -11,7 +11,7 @@ for file in files:
     try:
         with open(file,'rb') as f:
             for line in f:
-                print(line)
+#                print(line)
                 hash.update(line)
     except IsADirectoryError as e:
         pass

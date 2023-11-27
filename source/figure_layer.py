@@ -5,12 +5,12 @@ from data_manager import *
 import matplotlib.pyplot as plt
 import os
 from layers import FigureLayer
-from source.utility import *
+from utility import *
 from os import path
 import pathlib
-from source.image_emulator import ImageEmulator2Channel
-from source.image_process import SpotCountLocationsDoughnut, CellDetectorCellMask
-from source.distributed_computing import DistributedComputeDaskTask, Task
+from image_emulator import ImageEmulator2Channel
+from image_process import SpotCountLocationsDoughnut, CellDetectorCellMask
+from distributed_computing import DistributedComputeDaskTask, Task
 import numpy as np
 import scipy
 class FigureLayerPA(FigureLayer):

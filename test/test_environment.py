@@ -1,4 +1,4 @@
-from source.environment import *
+from environment import *
 import os
 import unittest
 class TestBackend(unittest.TestCase):

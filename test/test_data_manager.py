@@ -1,9 +1,9 @@
-from source.data_manager import *
-from source.authentication import *
-from source.globals import Globals
+from data_manager import *
+from authentication import *
+from globals import Globals
 import unittest
 import os
-from source.image_process import *
+from image_process import *
 class TestIOManager(unittest.TestCase):
     def testDomain(self):
         io=IOManager()

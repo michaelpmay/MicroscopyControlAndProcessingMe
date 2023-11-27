@@ -1,10 +1,10 @@
-from source.environment import *
-from source.decision import *
-from source.acquisition import AcquisitionPluginLibrary
-from source.postprocessors import PostProcessor
-from source.calibration import NullCalibration
-from source.distributed_computing import DistributedComputeLocal
-from source.verbosity import Verbosity
+from environment import *
+from decision import *
+from acquisition import AcquisitionPluginLibrary
+from postprocessors import PostProcessor
+from calibration import NullCalibration
+from distributed_computing import DistributedComputeLocal
+from verbosity import Verbosity
 class iAPDFunction:
     def run(self):
         pass
