@@ -4,4 +4,3 @@ apdSystem = APDSystem(configFileName='myConfig.cfg',  #
 lib = AcquisitionPluginLibrary()
 acquisition = lib.xyLooseGrid([0], [0], [0, 0])
 dataset=apdSystem.acquire(acquisition)
-1+12

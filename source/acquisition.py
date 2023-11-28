@@ -41,7 +41,7 @@ class EventsTicket:
         if value == None:
             self._num_time_points = None
             return
-        if not isinstance(value, int):
+        if not isinstance(value, (int, float)):
             raise TypeError
         if value<0:
             raise ValueError
