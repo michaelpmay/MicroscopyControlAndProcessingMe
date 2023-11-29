@@ -1073,7 +1073,10 @@ class AcquisitionPluginLibrary:
         builder.setEventsOrder('tpzc')
         # build the hooks
         lib = HookSetLibrary()
-        hooks = lib.get('default')
+        if emulator:
+            hooks=lib.get('image_emulator',emulator)
+        else:
+            hooks = lib.get('default')
         builder.linkHooks(hooks)
         # build save location
         builder.setSaveDirectory(None)  # if None env will set as USER DEFAULT FOLDER
@@ -1093,7 +1096,7 @@ class AcquisitionPluginLibrary:
         plugin = builder.getPlugin()
         return plugin
 
-    def xySequence(self,sequence,calibration=NullCalibration(),timeRange=None,zRange=None,channelRange=None):
+    def xySequence(self,sequence,calibration=NullCalibration(),timeRange=None,zRange=None,channelRange=None,emulator=None):
         builder = AcquisitionBuilder()
         # Build the events
         if timeRange:
@@ -1107,7 +1110,10 @@ class AcquisitionPluginLibrary:
         builder.setEventsOrder('tpzc')
         # build the hooks
         lib=HookSetLibrary()
-        hooks=lib.get('default')
+        if emulator:
+            hooks=lib.get('image_emulator',emulator)
+        else:
+            hooks = lib.get('default')
         builder.linkHooks(hooks)
         # build save location
         builder.setSaveDirectory(None)  # if None env will set as USER DEFAULT FOLDER
@@ -1127,7 +1133,7 @@ class AcquisitionPluginLibrary:
         plugin = builder.getPlugin()
         return plugin
 
-    def xyzSequence(self,sequence,timeRange=None,zRange=None,channelRange=None):
+    def xyzSequence(self,sequence,timeRange=None,zRange=None,channelRange=None,emulator=None):
         builder = AcquisitionBuilder()
         # Build the events
         if timeRange:
@@ -1140,7 +1146,10 @@ class AcquisitionPluginLibrary:
         builder.setEventsOrder('tpzc')
         # build the hooks
         lib=HookSetLibrary()
-        hooks=lib.get('default')
+        if emulator:
+            hooks=lib.get('emulator')
+        else:
+            hooks=lib.get('default')
         builder.linkHooks(hooks)
         # build save location
         builder.setSaveDirectory(None)  # if None env will set as USER DEFAULT FOLDER
