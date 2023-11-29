@@ -1,6 +1,5 @@
 #!/bin/bash
 if [ -z  $1 ]; then
-
   echo "ERROR: provide a Python Version"
   exit 1
 fi
