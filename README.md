@@ -4,7 +4,7 @@ This project creates a framework for high level automation by using an **Acquire
 
 This repository can also use multiple machines to accelerate compute times and use image emulators to mimic the behavior of a microscope.
 
-![alt text](https://github.com/MunskyGroup/MicroscopyControlAndProcessingMe/blob/main/docs/files/apd.png)
+![alt text](https://github.com/michaelpmay/MicroscopyControlAndProcessingMe/blob/main/docs/files/apd.png)
 > *Acquire-Process-Decide Pipelines create a framework for high level automation by builing up on automations created by ```MicroManager``` and ```PycroManager```.*
 
 ### Requirements:
