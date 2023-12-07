@@ -5,15 +5,16 @@ from scipy.signal import convolve2d
 from image_process import CellDetectorCellMask, SpotCountLocations, SpotCounter, SpotCountLocationsDoughnut,SpotDetectImagesBooleanDoughnut,ImageCalculateFishPipeline
 from distributed_computing import Task,DistributedComputeDaskTask,DistributedComputeLocal
 from ndtiff import NDTiffDataset
-class iPostProcessor:
+
+class iPostProcessorPipeline:
     def add(self,key,*args,**kwargs):
         '''add a process which will generate tasks'''
         pass
-    def compute(self):
+    def process(self):
         '''compute exisint tasks'''
         pass
 
-class iPostProcess:
+class iPostProcessNode:
     def generate(self,dataset,acquisition):
         pass
 
@@ -22,38 +23,72 @@ class iPostProcessLibrary:
         'return process node form key, args kwrags'
         pass
 
-class PostProcessor:
-    def __init__(self,computer=DistributedComputeLocal()):
-        self.tasks=[]
-        self.data=None
-        self.output={}
-        self.acq=None
-        self.computer=computer
+class ProcessedData:
+    def __init__(self):
+        self.keys=[]
+        self.values=[]
+
+    def __getitem__(self, key):
+        if key not in self.keys:
+            return KeyError("key not found")
+        for i in range(len(self.keys)):
+            if key == self.keys[i]:
+                return self.values[i]
+
+    def __setitem__(self, key, value):
+        if not isinstance(value,dict):
+            raise TypeError("value must be dict")
+        if key not in self.keys:
+            self.keys.append(key)
+            self.values.append(value)
+        else:
+            for i in range(len(self.keys)):
+                if key == self.keys[i]:
+                    self.values[i].update(value)
+
+    def __delitem__(self, key):
+        if key not in self.keys:
+            return KeyError("key not found")
+        for i in range(len(self.keys)):
+            if key == self.keys[i]:
+                self.keys.remove(i)
+                self.values.remove(i)
+
+class PostProcessPipeline:
+    def __init__(self):
+        self.node=[]
 
     def add(self, key, *args, **kwargs):
+        if not isinstance(key,str):
+            raise TypeError
         lib = PostProcessLibrary()
         processor=lib.get(key, *args, **kwargs)
-        self.tasks.append(processor)
-        #data=processor.process(self.data,self.acq)
-        #self.output.update(data)
+        self.node.append(processor)
+
+
+    def addNode(self,node):
+        if not isinstance(node,PostProcessNode):
+            raise TypeError
+        self.node.append(node)
+
 
     def process(self,data,acq):
         if not isinstance(acq,AcquisitionPlugin):
             raise TypeError
-        if not isinstance(self,PostProcessor):
-            raise TypeError
-        output={}
-        for i in range(len(self.tasks)):
-            output.update(self.tasks[i].process(data,acq))
-        return output
+        outputs=[]
+        for i in range(len(self.node)):
+            (data,output)=self.node[i].process(data, acq)
+            outputs.append(output)
+        return outputs
 
-
-class PostProcessNode(iPostProcess):
-    def __init__(self,function=None,*args,**kwargs):
+class PostProcessNode(iPostProcessNode):
+    def __init__(self,function=None,squish_axes=None,*args,**kwargs):
         self.function=function
         self.name=None
         self.args=args
         self.kwargs=kwargs
+        self.axes=None
+        self.squish_axes=squish_axes
         if 'computer' in kwargs.keys():
             self.computer=kwargs['computer']
         else:
@@ -62,7 +97,34 @@ class PostProcessNode(iPostProcess):
     def process(self,dataset,acq,*args,**kwargs):
         if not isinstance(acq,AcquisitionPlugin):
             raise TypeError
-        return self.function(self,dataset,acq,*args,**kwargs)
+        items = dataset.get_index_keys() #use a hashtable to project over keys. This section is a headache even if you know what ur doing. Uses a hashtable to squish axes
+        if self.squish_axes:
+            if self.squish_axes not in items[0].keys():
+                raise KeyError('projection axes not found')
+        hashed_items={}
+        for i in range(len(items)):
+            event_props=dict(items[i])
+            if self.squish_axes in event_props.keys():
+                event_props.pop(self.squish_axes)
+            hash_key=frozenset(event_props.items())
+            if hash_key not in hashed_items:
+                hashed_items[hash_key]=[]
+            hashed_items[hash_key].append(items[i])
+            print(hashed_items)
+        output = ProcessedData()
+        for i in hashed_items:
+            chunks=[]
+            metadatas=[]
+            for key in hashed_items[i]:
+                chunk = dataset.read_image(**key)# **j will pass the dict as kwargs
+                chunks.append(chunk)
+                metadata = dataset.read_metadata(**key)
+                metadatas.append(metadata)
+            task = Task(self.function,self,chunks,metadatas,hashed_items[i])
+            (chunk, chunk_output) = task()
+            output[i]=chunk_output
+        return (dataset,output)
+
 
 class PostProcessLibrary():
     def __init__(self,computer=DistributedComputeLocal()):
@@ -76,21 +138,39 @@ class PostProcessLibrary():
         node.name = key
         return node
 
-    def null(self):
-        def function(self,dataset,acq,*args,**kwargs):
-            data={}
-            data['null']=()
-            return data
-        node=PostProcessNode(computer=self.computer)
+    def null(self,squish_axes=None,computer=DistributedComputeLocal()):
+        def function(self,chunks,metadatas,events,*args,**kwargs):
+            chunks_output={'null':None}
+            return (chunks,chunks_output)
+        node=PostProcessNode(squish_axes=squish_axes,computer=computer)
         node.function=function
         return node
 
-    def source(self):
-        def function(self, dataset, acq, *args, **kwargs):
-            data = {}
-            data['source'] = dataset
-            return data
-        node = PostProcessNode(computer=self.computer)
+    def source(self,squish_axes=None,computer=DistributedComputeLocal()):
+        def function(self,chunks,metadatas,events,*args,**kwargs):
+            chunks_output={'source':chunks}
+            return (chunks,chunks_output)
+        node = PostProcessNode(squish_axes=squish_axes,computer=computer)
+        node.function = function
+        return node
+
+    def mean(self,squish_axes=None,computer=DistributedComputeLocal()):
+        def function(self,chunks,metadatas,events):
+            #print(events)
+            chunks_output={'mean':np.mean(chunks)}
+            return (chunks,chunks_output)
+        node = PostProcessNode(squish_axes=squish_axes,computer=computer)
+        node.function = function
+        return node
+
+    def mask(self,squish_axes=None,computer=DistributedComputeLocal(),model_type='cyto'):
+        def function(self,chunks,metadatas,events):
+            #print(events)
+            detector=CellDetectorCellMask(model_type=model_type)
+            mask=detector.process(chunks)
+            chunks_output={'mask':mask}
+            return (chunks,chunks_output)
+        node = PostProcessNode(squish_axes=squish_axes,computer=computer)
         node.function = function
         return node
 
