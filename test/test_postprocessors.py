@@ -63,6 +63,12 @@ class TestPostProcessorNodeLibrary(TestCase):
         for image in self.images:
             data = node.process(image, self.acq)
             image.close()
+
+    def test_spotCount_returnsdata(self):
+        node=self.object.get('spotCount')
+        for image in self.images:
+            data = node.process(image, self.acq)
+            image.close()
 '''
     def test_cellDetectNumCellsInRoi_returnsdata(self):
         node=self.object.get('cellDetectNumCellsInRoi')
@@ -118,6 +124,13 @@ class TestPostProcessPipeline(TestCase):
             d = self.object.process(image, AcquisitionPlugin())
             image.close()
 
+    def test_process_spotcount_returnsProrcessedData(self):
+        self.object.add('spotCount')
+        for image in self.images:
+            d = self.object.process(image, AcquisitionPlugin())
+            #self.assertEqual(d,ProcessedData)
+            image.close()
+
     def test_processMask_squishaxes_returnsMask(self):
         self.object.add('mask')
         self.object.add('mask',squish_axes='channel',model_type='cyto')
@@ -128,6 +141,13 @@ class TestPostProcessPipeline(TestCase):
 
     def test_processmean_squishaxes_returnsMean(self):
         self.object.add('mean',squish_axes='channel')
+        for i in range(len(self.images)): # only use image set 4 since it uses channels
+            if i==4:
+                d = self.object.process(self.images[i], AcquisitionPlugin())
+            self.images[i].close()
+
+    def test_process_spotCount_squishaxes_returnsMean(self):
+        self.object.add('spotCount',squish_axes='channel')
         for i in range(len(self.images)): # only use image set 4 since it uses channels
             if i==4:
                 d = self.object.process(self.images[i], AcquisitionPlugin())

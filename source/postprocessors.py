@@ -130,6 +130,7 @@ class PostProcessLibrary():
     def __init__(self,computer=DistributedComputeLocal()):
         self.computer=computer
         #print("PLIBRARY:{0}".format(self.computer))
+
     def get(self, key, *args, **kwargs):
         if not isinstance(key, str):
             raise TypeError
@@ -167,6 +168,17 @@ class PostProcessLibrary():
         def function(self,chunks,metadatas,events):
             #print(events)
             detector=CellDetectorCellMask(model_type=model_type)
+            mask=detector.process(chunks)
+            chunks_output={'mask':mask}
+            return (chunks,chunks_output)
+        node = PostProcessNode(squish_axes=squish_axes,computer=computer)
+        node.function = function
+        return node
+
+    def spotCount(self,squish_axes=None,computer=DistributedComputeLocal(),model_type='cyto'):
+        def function(self,chunks,metadatas,events):
+            #print(events)
+            detector=SpotCountLocations()
             mask=detector.process(chunks)
             chunks_output={'mask':mask}
             return (chunks,chunks_output)

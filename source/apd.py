@@ -1,7 +1,7 @@
 from environment import *
 from decision import *
 from acquisition import AcquisitionPluginLibrary
-from postprocessors import PostProcessor
+from postprocessors import PostProcessPipeline
 from calibration import NullCalibration
 from distributed_computing import DistributedComputeLocal
 from verbosity import Verbosity
@@ -74,7 +74,7 @@ class APDSystem:
     def linkAPD(self,acquisition,process,decision,saveInitialImages=None,saveDataset=None,saveFinalImages=None):
         if not isinstance(acquisition,AcquisitionPlugin):
             raise TypeError
-        if not isinstance(process, PostProcessor):
+        if not isinstance(process, PostProcessPipeline):
             raise TypeError
         if not isinstance(decision,iDecision):
             raise TypeError
@@ -141,12 +141,15 @@ class APDFunctionLibrary(iAPDSystemLibrary):
         return pipeline
 
     def findNCells(self, N):
+        #todo
         pass
 
     def findNCellsAndTimeSeriesImage(self, N):
+        #todo
         pass
 
     def findNCellsAndSnapshotImage(self, N):
+        #todo
         pass
 
     def findCellsInGrid(self,xRangeROI,yRangeROI,xyOriginROI,ROIImSize,channels=None,zRange=None,timeRange=None,laserIntensityRGBV=None,emulator=None,calibration=NullCalibration(),model_type='cyto',compute=DistributedComputeLocal(),show_display=True,split_roi=False):
@@ -168,7 +171,7 @@ class APDFunctionLibrary(iAPDSystemLibrary):
             lib=AcquisitionPluginLibrary()
             self.backend.acquisition=lib.xyLooseGrid(xRangeROI,yRangeROI,xyOriginROI,name='exampleMileStone1_Part1',calibration=calibration,show_display=show_display)
             dataset = self.backend.acquireAndReturnDataset()
-            processor = PostProcessor(data=dataset, acq=self.backend.acquisition,computer=compute)
+            processor = PostProcessPipeline(data=dataset, acq=self.backend.acquisition,computer=compute)
             processor.add('fovMeanIntensity',isSorted=True)
             processor.add('cellDetectSpotLocationsInRoiDoughnut')
             processor.add('cellDetectNumCellsInRoi',default_flow_threshold = .1,MINIMUM_CELL_AREA = 30,model_type=model_type)
@@ -191,7 +194,7 @@ class APDFunctionLibrary(iAPDSystemLibrary):
                 self.backend.acquisition.settings.name='exampleMileStone1_Part2'
                 dataset = self.backend.acquireAndReturnDataset()
             time.sleep(.1)
-            processor = PostProcessor(data=dataset, acq=self.backend.acquisition,computer=compute)
+            processor = PostProcessPipeline(data=dataset, acq=self.backend.acquisition,computer=compute)
             processor.add('sharpestZ')
             processed_data = processor.get()
             #print(processed_data)
@@ -225,7 +228,7 @@ class APDFunctionLibrary(iAPDSystemLibrary):
             lib=AcquisitionPluginLibrary()
             self.backend.acquisition=lib.xyLooseGrid(xRangeROI,yRangeROI,xyOriginROI,name='findNCellsInGridNoZ_Part1',calibration=calibration,show_display=show_display)
             dataset = self.backend.acquire(self.backend.acquisition)
-            processor = PostProcessor(computer=compute)
+            processor = PostProcessPipeline(computer=compute)
             processor.add('fovMeanIntensity',isSorted=True)
             processor.add('cellDetectSpotLocationsInRoiDoughnut')
             processor.add('cellDetectNumCellsInRoi',default_flow_threshold = .1,MINIMUM_CELL_AREA = 30,model_type=model_type)
@@ -270,7 +273,7 @@ class APDFunctionLibrary(iAPDSystemLibrary):
             self.backend.acquisition=lib.xyLooseGrid(xRangeROI,yRangeROI,xyOriginROI,name='exampleMileStone1_Part1',calibration=calibration)
             print(self.backend.acquisition.events.xy_positions)
             dataset = self.backend.acquire(self.backend.acquisition)
-            processor = PostProcessor()
+            processor = PostProcessPipeline()
             processor.add('cellDetectSpotLocationsInRoiDoughnut',sigma=[3,8])
             processor.add('cellDetectNumCellsInRoi',default_flow_threshold = .1,MINIMUM_CELL_AREA = 30,model_type=model_type)
             processor.process(dataset, self.backend.acquisition)
@@ -306,7 +309,7 @@ class APDFunctionLibrary(iAPDSystemLibrary):
             lib=AcquisitionPluginLibrary()
             self.backend.acquisition=lib.xyLooseGrid(xRangeROI,yRangeROI,xyOriginROI,name='findNumCells_Part1',calibration=calibration,show_display=show_display)
             dataset = self.backend.acquireAndReturnDataset()
-            processor = PostProcessor(computer=compute)
+            processor = PostProcessPipeline(computer=compute)
             processor.add('cellDetectNumCellsInRoi',default_flow_threshold = .1,MINIMUM_CELL_AREA = 30,model_type=model_type)
             processed_data = processor.process(dataset,self.backend.acquisition)
             #print('DetectedNumCells={0}'.format(processed_data['cellDetectNumCellsInRoi']['numcells']))
@@ -337,7 +340,7 @@ class APDFunctionLibrary(iAPDSystemLibrary):
                                                            name='findNPunctaInGridNoZ_Part1', calibration=calibration,
                                                            show_display=show_display)
             dataset = self.backend.acquire(self.backend.acquisition)
-            processor = PostProcessor(computer=compute)
+            processor = PostProcessPipeline(computer=compute)
             processor.add('fovMeanIntensity', isSorted=True)
             processor.add('SpotDetectImagesBooleanDoughnut',threshold=threshold)
             processed_data=processor.process(dataset, self.backend.acquisition)
@@ -380,7 +383,7 @@ class APDFunctionLibrary(iAPDSystemLibrary):
             lib=AcquisitionPluginLibrary()
             self.backend.acquisition=lib.xyLooseGrid(xRangeROI,yRangeROI,xyOriginROI,name='findPunctaInGrid_Part1',calibration=calibration,show_display=show_display)
             dataset = self.backend.acquireAndReturnDataset()
-            processor = PostProcessor(computer=compute)
+            processor = PostProcessPipeline(computer=compute)
             processor.add('fovMeanIntensity',isSorted=True)
             processor.add('cellDetectSpotLocationsInRoiDoughnut')
             processed_data = processor.process(dataset, self.backend.acquisition)
@@ -402,7 +405,7 @@ class APDFunctionLibrary(iAPDSystemLibrary):
                 self.backend.acquisition.settings.name='findPunctaInGrid_Part2'
                 dataset = self.backend.acquireAndReturnDataset()
             time.sleep(.1)
-            processor = PostProcessor(computer=compute)
+            processor = PostProcessPipeline(computer=compute)
             processor.add('sharpestZ')
             processed_data = processor.get(dataset,self.backend.acquisition)
             self.backend.datamanager[g.DATAKEY_USERDATA].save('findPunctaInGrid2.pkl', processed_data)
@@ -433,7 +436,7 @@ class APDFunctionLibrary(iAPDSystemLibrary):
             lib=AcquisitionPluginLibrary()
             self.backend.acquisition=lib.xyLooseGrid(xRangeROI,yRangeROI,xyOriginROI,name='exampleMileStone1_Part1',calibration=calibration,show_display=show_display)
             dataset = self.backend.acquireAndReturnDataset()
-            processor = PostProcessor(data=dataset, acq=self.backend.acquisition,computer=compute)
+            processor = PostProcessPipeline(data=dataset, acq=self.backend.acquisition,computer=compute)
             processor.add('fovMeanIntensity',isSorted=True)
             processor.add('cellDetectSpotLocationsInRoiDoughnut')
             processor.add('cellDetectNumCellsInRoi',default_flow_threshold = .1,MINIMUM_CELL_AREA = 30,model_type=model_type)
@@ -456,7 +459,7 @@ class APDFunctionLibrary(iAPDSystemLibrary):
                 self.backend.acquisition.settings.name='exampleMileStone1_Part2'
                 dataset = self.backend.acquireAndReturnDataset()
             time.sleep(.1)
-            processor = PostProcessor(data=dataset, acq=self.backend.acquisition,computer=compute)
+            processor = PostProcessPipeline(data=dataset, acq=self.backend.acquisition,computer=compute)
             processor.add('fishPipeline')
             processed_data = processor.get()
             print(processed_data)
