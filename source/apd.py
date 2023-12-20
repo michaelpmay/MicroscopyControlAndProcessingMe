@@ -88,6 +88,7 @@ class APDSystem:
             if settings['saveInitialImages']:
                 self.backend.datamanager.put(images,settings['saveInitialImages'])
             dataset=processor.process(images,acquisition)
+            print(dataset)
             if settings['saveDataset']:
                 self.backend.datamanager.put(dataset,settings['saveDataset'])
             new_acquisition=decision.propose(dataset,acquisition)

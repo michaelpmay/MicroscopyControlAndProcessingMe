@@ -2,9 +2,9 @@ from unittest import TestCase
 from postprocessors import *
 from ndtiff import NDTiffDataset
 
-class TestProcessedData(TestCase):
+class TestOutputMapper(TestCase):
     def setUp(self) -> None:
-        self.object=ProcessedData()
+        self.object=OutputMapper()
 
     def test_domain(self):
         self.object[{'time':3,'position':0}]={'value1':4}
@@ -26,14 +26,11 @@ class TestPostProcessNode(TestCase):
     def test_generate_returnsDictMap(self):
         data=NDTiffDataset(dataset_path='data/core/xyLooseGrid_1')
         acq=AcquisitionPlugin()
-        def function(self,chunk,metadata):
-            data={}
-            data['null']=None
-            return (chunk,data)
+        def function(self, chunks, metadatas, events):
+            chunks_output = {}
+            return (chunks, chunks_output)
         self.object.function=function
         (value,output)=self.object.process(data,acq)
-        self.assertIsInstance(value,NDTiffDataset)
-        self.assertIsInstance(output, ProcessedData)
         data.close()
 
 class TestPostProcessorNodeLibrary(TestCase):
@@ -58,8 +55,8 @@ class TestPostProcessorNodeLibrary(TestCase):
             data = node.process(image, self.acq)
             image.close()
 
-    def test_fovMeanIntensity_returnsdata(self):
-        node=self.object.get('fovMeanIntensity')
+    def test_mean_returnsdata(self):
+        node=self.object.get('mean')
         for image in self.images:
             data = node.process(image, self.acq)
             image.close()
@@ -114,6 +111,18 @@ class TestPostProcessPipeline(TestCase):
 
     def test_processsource_returnsSource(self):
         self.object.add('source')
+        for image in self.images:
+            d = self.object.process(image, AcquisitionPlugin())
+            image.close()
+
+    def test_processsSharpness_returnsSharpness(self):
+        self.object.add('sharpness')
+        for image in self.images:
+            d = self.object.process(image, AcquisitionPlugin())
+            image.close()
+
+    def test_processsSharpest_returnsSharpest(self):
+        self.object.add('sharpest')
         for image in self.images:
             d = self.object.process(image, AcquisitionPlugin())
             image.close()

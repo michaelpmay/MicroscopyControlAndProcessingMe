@@ -10,3 +10,20 @@ class TestDecisionRepeatAcquisition(TestCase):
         processed_data={}
         self.object.propose(processed_data,acquisition)
 
+
+class TestDecicion(TestCase):
+    def testDecision_always_returnsDecision(self):
+        decision=Decision().always()
+        self.assertIsInstance(decision,Decision)
+
+    def testDecision_never_returnsDecision(self):
+        decision = Decision().never()
+        self.assertIsInstance(decision, Decision)
+
+    def testDecision_repeat_returnsDecision(self):
+        decision=Decision().repeat()
+        self.assertIsInstance(decision,Decision)
+
+    def testDecision_always_Repeat_returnsDecision(self):
+        decision = Decision().always().repeat()
+        self.assertIsInstance(decision, Decision)

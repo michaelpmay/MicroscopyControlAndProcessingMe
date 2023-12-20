@@ -1,3 +1,5 @@
+import scipy.signal
+
 from acquisition import AcquisitionPlugin
 from itertools import permutations
 import numpy as np
@@ -23,10 +25,21 @@ class iPostProcessLibrary:
         'return process node form key, args kwrags'
         pass
 
-class ProcessedData:
+'''
+class ProcessedData(dict):
+    pass
+'''
+
+class OutputMapper:
     def __init__(self):
         self.keys=[]
         self.values=[]
+
+    def __str__(self):
+        string=""
+        for i in range(len(self.keys)):
+            string=string + str(self.keys[i])+" maps to "+str(self.values[i]) + "\n"
+        return string
 
     def __getitem__(self, key):
         if key not in self.keys:
@@ -111,7 +124,7 @@ class PostProcessNode(iPostProcessNode):
                 hashed_items[hash_key]=[]
             hashed_items[hash_key].append(items[i])
             print(hashed_items)
-        output = ProcessedData()
+        output = OutputMapper()
         for i in hashed_items:
             chunks=[]
             metadatas=[]
@@ -123,6 +136,7 @@ class PostProcessNode(iPostProcessNode):
             task = Task(self.function,self,chunks,metadatas,hashed_items[i])
             (chunk, chunk_output) = task()
             output[i]=chunk_output
+        print(output)
         return (dataset,output)
 
 
@@ -177,374 +191,79 @@ class PostProcessLibrary():
 
     def spotCount(self,squish_axes=None,computer=DistributedComputeLocal(),model_type='cyto'):
         def function(self,chunks,metadatas,events):
-            #print(events)
             detector=SpotCountLocations()
-            mask=detector.process(chunks)
-            chunks_output={'mask':mask}
+            locations=detector.process(chunks)
+            chunks_output={'spotCount':len(locations)}
             return (chunks,chunks_output)
         node = PostProcessNode(squish_axes=squish_axes,computer=computer)
         node.function = function
         return node
 
-    def fovMeanIntensity(self,isSorted=False):
-        def function(self,dataset,acq,*args,isSorted=False):
-            #print(type(self.computer))
-            '''this code is so nasty im sorry future me: need to refactor this into dimensions libraries'''
-            tasks=[]
-            def function(image,index):
-                return np.mean(image)
-
-            darray=dataset.as_array()
-            d = np.array(darray)
-            acq_len_dims = d.shape[:-2]
-            meanIntensity = np.zeros(acq_len_dims)
-            if len(acq_len_dims) == 1:
-                for i in range(acq_len_dims[0]):
-                    task=Task(function,d[i, :, :],[i])
-                    tasks.append(task)
-            elif len(acq_len_dims) == 2:
-                for i in range(acq_len_dims[0]):
-                    for j in range(acq_len_dims[1]):
-                        task = Task(function, d[i, j, :, :],[i,j])
-                        task()
-                        tasks.append(task)
-                output = self.computer.run(tasks)
-                ind = 0
-                for i in range(acq_len_dims[0]):
-                    for j in range(acq_len_dims[1]):
-                        meanIntensity[i, j] = output[ind]
-                        ind=ind+1
-            elif len(acq_len_dims) == 3:
-                for i in range(acq_len_dims[0]):
-                    for j in range(acq_len_dims[1]):
-                        for k in range(acq_len_dims[2]):
-                            task = Task(function, d[i, j,k, :, :],[i,j,k])
-                            tasks.append(task)
-                output = self.computer.run(tasks)
-                ind=0
-                for i in range(acq_len_dims[0]):
-                    for j in range(acq_len_dims[1]):
-                        for k in range(acq_len_dims[2]):
-                            meanIntensity[i, j, k] = output[ind]
-                            ind=ind+1
-            elif len(acq_len_dims) == 4:
-                for i in range(acq_len_dims[0]):
-                    for j in range(acq_len_dims[1]):
-                        for k in range(acq_len_dims[2]):
-                            for l in range(acq_len_dims[3]):
-                                task = Task(np.mean, d[i, j, k, l,:, :],[i,j,k,l])
-                                tasks.append(task)
-                output = self.computer.run(tasks)
-                ind = 0
-                for i in range(acq_len_dims[0]):
-                    for j in range(acq_len_dims[1]):
-                        for k in range(acq_len_dims[2]):
-                            for l in range(acq_len_dims[3]):
-                                meanIntensity[i, j, k,l] = output[ind]
-                                ind = ind + 1
-            else:
-                raise ValueError
-            data = {}
-            data['fovMeanIntensity'] = meanIntensity
-            if isSorted:
-                data['fovMeanIntensitySorted']['values'] = np.sort(meanIntensity)
-                data['fovMeanIntensitySorted']['indexmap'] = np.argsort(meanIntensity)
-            return data
-
-        process = PostProcessNode(computer=self.computer)
-        process.function = function
-        process.isSorted=isSorted
-        return process
-
-    def cellDetectNumCellsInRoi(self,default_flow_threshold=.1,MINIMUM_CELL_AREA = 30,model_type= 'nuclei'):
-        def function(self,dataset,acq,*args,default_flow_threshold=.1,MINIMUM_CELL_AREA = 30,model_type='nuclei'):
-            #print(type(self.computer))
-            detector=CellDetectorCellMask(default_flow_threshold=default_flow_threshold,MINIMUM_CELL_AREA =MINIMUM_CELL_AREA,model_type=model_type)
-            d = dataset.as_array()
-            acq_len_dims = d.shape[:-2]
-            numCells = []
-            index=[]
-            tasks=[]
-            def functionNumCellsInROI(chunk):
-                mask = detector.process(chunk)
-                numCellsInROI = np.max(mask)
-                return numCellsInROI
-            if len(acq_len_dims)==1:
-                for i in range(d.numblocks[0]):
-                    chunk = np.array(d.blocks[i, :, :]).squeeze()
-                    task=Task(functionNumCellsInROI,chunk)
-                    tasks.append(task)
-                output=self.computer.run(tasks)
-                ind=0
-                for i in range(d.numblocks[0]):
-                    numCells.append(output[ind])
-                    index.append([i])
-                    ind=ind+1
-            elif len(acq_len_dims)==2:
-                for i in range(d.numblocks[0]):
-                    for j in range(d.numblocks[1]):
-                        chunk = np.array(d.blocks[i,j, :, :]).squeeze()
-                        task = Task(functionNumCellsInROI, chunk)
-                        tasks.append(task)
-                output = self.computer.run(tasks)
-                ind = 0
-                for i in range(d.numblocks[0]):
-                    for j in range(d.numblocks[1]):
-                        numCells.append(output[ind])
-                        index.append([i,j])
-                        ind = ind + 1
-            elif len(acq_len_dims)==3:
-                for i in range(d.numblocks[0]):
-                    for j in range(d.numblocks[1]):
-                        for k in range(d.numblocks[2]):
-                            chunk = np.array(d.blocks[i, j,k, :, :]).squeeze()
-                            task = Task(functionNumCellsInROI, chunk)
-                            tasks.append(task)
-                output = self.computer.run(tasks)
-                ind = 0
-                for i in range(d.numblocks[0]):
-                    for j in range(d.numblocks[1]):
-                        for k in range(d.numblocks[2]):
-                            numCells.append(output[ind])
-                            index.append([i, j,k])
-                            ind = ind + 1
-            elif len(acq_len_dims)==4:
-                for i in range(d.numblocks[0]):
-                    for j in range(d.numblocks[1]):
-                        for k in range(d.numblocks[2]):
-                            for l in range(d.numblocks[3]):
-                                chunk = np.array(d.blocks[i, j,k,l, :, :]).squeeze()
-                                task = Task(functionNumCellsInROI, chunk)
-                                tasks.append(task)
-                output = self.computer.run(tasks)
-                ind = 0
-                for i in range(d.numblocks[0]):
-                    for j in range(d.numblocks[1]):
-                        for k in range(d.numblocks[2]):
-                            for l in range(d.numblocks[3]):
-                                numCells.append(output[ind])
-                                index.append([i, j,k,l])
-                                ind = ind + 1
-            #print("NumCellsFound:{0}".format(np.sum(numCells)))
-            return {'cellDetectNumCellsInRoi': {'numcells':numCells,'index':index}}
-
-        process = PostProcessNode(computer=self.computer)
-        process.function = function
-        process.kwargs['detector'] = CellDetectorCellMask(model_type=model_type)
-        process.kwargs['default_flow_threshold'] = default_flow_threshold
-        process.kwargs['MINIMUM_CELL_AREA'] = MINIMUM_CELL_AREA
-        process.kwargs['model_type']=model_type
-        return process
-
-    def cellDetectSpotLocationsInRoi(self,threshold=20):
-        def function(self,dataset,acq,*args,threshold=threshold):
-            #print(type(self.computer))
+    def spotLocations(self,squish_axes=None,computer=DistributedComputeLocal(),model_type='cyto'):
+        def function(self,chunks,metadatas,events):
             detector=SpotCountLocations()
-            d = dataset.as_array()
-            acq_len_dims = d.shape[:-2]
-            spotLocationData = []
-            index=[]
-            tasks=[]
-            #print('acq_len_dims:{0}'.format(acq_len_dims))
-            if len(acq_len_dims)==1:
-                for i in range(d.numblocks[0]):
-                    chunk = np.array(d.blocks[i, :, :]).squeeze()
-                    tasks.append(Task(detector.process, chunk - np.mean(chunk), threshold=threshold))
-                output = self.computer.run(tasks)
-                ind = 0
-                for i in range(d.numblocks[0]):
-                    spotLocationData.append(output[ind])
-                    index.append([i])
-                    ind = ind + 1
-            elif len(acq_len_dims)==2:
-                for i in range(d.numblocks[0]):
-                    for j in range(d.numblocks[1]):
-                        chunk = np.array(d.blocks[i, j,:, :]).squeeze()
-                        tasks.append(Task(detector.process, chunk - np.mean(chunk),threshold=threshold))
-                output=self.computer.run(tasks)
-                ind=0
-                for i in range(d.numblocks[0]):
-                    for j in range(d.numblocks[1]):
-                        spotLocationData.append(output[ind])
-                        index.append([i,j])
-                        ind=ind+1
-            elif len(acq_len_dims)==3:
-                for i in range(d.numblocks[0]):
-                    for j in range(d.numblocks[1]):
-                        for k in range(d.numblocks[2]):
-                            chunk = np.array(d.blocks[i, j,k, :, :]).squeeze()
-                            tasks.append(Task(detector.process, chunk - np.mean(chunk), threshold=threshold))
-                output = self.computer.run(tasks)
-                ind = 0
-                for i in range(d.numblocks[0]):
-                    for j in range(d.numblocks[1]):
-                        for k in range(d.numblocks[2]):
-                            spotLocationData.append(output[ind])
-                            index.append([i, j,k])
-                            ind = ind + 1
-            elif len(acq_len_dims)==4:
-                for i in range(d.numblocks[0]):
-                    for j in range(d.numblocks[1]):
-                        for k in range(d.numblocks[2]):
-                            for l in range(d.numblocks[3]):
-                                chunk = np.array(d.blocks[i, j, k,l, :, :]).squeeze()
-                                tasks.append(Task(detector.process, chunk - np.mean(chunk), threshold=threshold))
-                output = self.computer.run(tasks)
-                ind = 0
-                for i in range(d.numblocks[0]):
-                    for j in range(d.numblocks[1]):
-                        for k in range(d.numblocks[2]):
-                            for l in range(d.numblocks[3]):
-                                spotLocationData.append(output[ind])
-                                index.append([i, j, k,l])
-                                ind = ind + 1
-            else:
-                raise ValueError
-            return {'cellDetectSpotLocationsInRoi': {'spotLocationData':spotLocationData,'index':index}}
+            locations=detector.process(chunks)
+            chunks_output={'spotLocations':locations}
+            return (chunks,chunks_output)
+        node = PostProcessNode(squish_axes=squish_axes,computer=computer)
+        node.function = function
+        return node
 
-        process = PostProcessNode(computer=self.computer)
-        process.function = function
-        return process
-
-    def cellDetectSpotLocationsInRoiDoughnut(self,threshold=20):
-        def function(self,dataset,acq,*args,threshold=threshold):
-            #print(type(self.computer))
+    def spotLocationsDoughnut(self,squish_axes=None,computer=DistributedComputeLocal(),model_type='cyto'):
+        def function(self,chunks,metadatas,events):
             detector=SpotCountLocationsDoughnut()
-            d = dataset.as_array()
-            acq_len_dims = d.shape[:-2]
-            spotLocationData = []
-            index=[]
-            tasks=[]
-            #print('acq_len_dims:{0}'.format(acq_len_dims))
-            if len(acq_len_dims)==1:
-                for i in range(d.numblocks[0]):
-                    chunk = np.array(d.blocks[i, :, :]).squeeze()
-                    tasks.append(Task(detector.process, chunk - np.mean(chunk), threshold=threshold))
-                output = self.computer.run(tasks)
-                ind = 0
-                for i in range(d.numblocks[0]):
-                    spotLocationData.append(output[ind])
-                    index.append([i])
-                    ind = ind + 1
-            elif len(acq_len_dims)==2:
-                for i in range(d.numblocks[0]):
-                    for j in range(d.numblocks[1]):
-                        chunk = np.array(d.blocks[i, j,:, :]).squeeze()
-                        tasks.append(Task(detector.process, chunk - np.mean(chunk),threshold=threshold))
-                output=self.computer.run(tasks)
-                ind=0
-                for i in range(d.numblocks[0]):
-                    for j in range(d.numblocks[1]):
-                        spotLocationData.append(output[ind])
-                        index.append([i,j])
-                        ind=ind+1
-            elif len(acq_len_dims)==3:
-                for i in range(d.numblocks[0]):
-                    for j in range(d.numblocks[1]):
-                        for k in range(d.numblocks[2]):
-                            chunk = np.array(d.blocks[i, j,k, :, :]).squeeze()
-                            tasks.append(Task(detector.process, chunk - np.mean(chunk), threshold=threshold))
-                output = self.computer.run(tasks)
-                ind = 0
-                for i in range(d.numblocks[0]):
-                    for j in range(d.numblocks[1]):
-                        for k in range(d.numblocks[2]):
-                            spotLocationData.append(output[ind])
-                            index.append([i, j,k])
-                            ind = ind + 1
-            elif len(acq_len_dims)==4:
-                for i in range(d.numblocks[0]):
-                    for j in range(d.numblocks[1]):
-                        for k in range(d.numblocks[2]):
-                            for l in range(d.numblocks[3]):
-                                chunk = np.array(d.blocks[i, j, k,l, :, :]).squeeze()
-                                tasks.append(Task(detector.process, chunk - np.mean(chunk), threshold=threshold))
-                output = self.computer.run(tasks)
-                ind = 0
-                for i in range(d.numblocks[0]):
-                    for j in range(d.numblocks[1]):
-                        for k in range(d.numblocks[2]):
-                            for l in range(d.numblocks[3]):
-                                spotLocationData.append(output[ind])
-                                index.append([i, j, k,l])
-                                ind = ind + 1
-            else:
-                raise ValueError
-            return {'cellDetectSpotLocationsInRoi': {'spotLocationData':spotLocationData,'index':index}}
+            locations=detector.process(chunks)
+            chunks_output={'spotLocationsDoughnut':locations}
+            return (chunks,chunks_output)
+        node = PostProcessNode(squish_axes=squish_axes,computer=computer)
+        node.function = function
+        return node
 
-        process = PostProcessNode(computer=self.computer)
-        process.function = function
-        return process
+    def cellCount(self,squish_axes=None,computer=DistributedComputeLocal(),default_flow_threshold=.1,MINIMUM_CELL_AREA = 30,model_type= 'nuclei'):
+        def function(self,chunks,metadatas,events):
+            chunks_output = {}
+            detector = CellDetectorCellMask(default_flow_threshold=default_flow_threshold,
+                                            MINIMUM_CELL_AREA=MINIMUM_CELL_AREA, model_type=model_type)
+            masks=detector.process(chunks)
+            chunks_output['cellCount']=np.max(masks)
+            return (chunks,chunks_output)
+        node = PostProcessNode(squish_axes=squish_axes, computer=computer)
+        node.function = function
+        return node
 
-    def fishPipeline(self,threshold=20):
-        def function(self,dataset,acq,*args,threshold=threshold):
-            #print(type(self.computer))
-            detector=ImageCalculateFishPipeline()
-            d = dataset.as_array()
-            acq_len_dims = d.shape[:-2]
-            fishPipelineData = []
-            index=[]
-            tasks=[]
-            #print('acq_len_dims:{0}'.format(acq_len_dims))
-            if len(acq_len_dims)==1:
-                for i in range(d.numblocks[0]):
-                    chunk = np.array(d.blocks[i, :, :]).squeeze()
-                    tasks.append(Task(detector.process, chunk))
-                output = self.computer.run(tasks)
-                ind = 0
-                for i in range(d.numblocks[0]):
-                    fishPipelineData.append(output[ind])
-                    index.append([i])
-                    ind = ind + 1
-            elif len(acq_len_dims)==2:
-                for i in range(d.numblocks[0]):
-                    for j in range(d.numblocks[1]):
-                        chunk = np.array(d.blocks[i, j,:, :]).squeeze()
-                        tasks.append(Task(detector.process,chunk))
-                output=self.computer.run(tasks)
-                ind=0
-                for i in range(d.numblocks[0]):
-                    for j in range(d.numblocks[1]):
-                        fishPipelineData.append(output[ind])
-                        index.append([i,j])
-                        ind=ind+1
-            elif len(acq_len_dims)==3:
-                for i in range(d.numblocks[0]):
-                    for j in range(d.numblocks[1]):
-                        for k in range(d.numblocks[2]):
-                            chunk = np.array(d.blocks[i, j,k, :, :]).squeeze()
-                            tasks.append(Task(detector.process, chunk))
-                output = self.computer.run(tasks)
-                ind = 0
-                for i in range(d.numblocks[0]):
-                    for j in range(d.numblocks[1]):
-                        for k in range(d.numblocks[2]):
-                            fishPipelineData.append(output[ind])
-                            index.append([i, j,k])
-                            ind = ind + 1
-            elif len(acq_len_dims)==4:
-                for i in range(d.numblocks[0]):
-                    for j in range(d.numblocks[1]):
-                        for k in range(d.numblocks[2]):
-                            for l in range(d.numblocks[3]):
-                                chunk = np.array(d.blocks[i, j, k,l, :, :]).squeeze()
-                                tasks.append(Task(detector.process, chunk ))
-                output = self.computer.run(tasks)
-                ind = 0
-                for i in range(d.numblocks[0]):
-                    for j in range(d.numblocks[1]):
-                        for k in range(d.numblocks[2]):
-                            for l in range(d.numblocks[3]):
-                                fishPipelineData.append(output[ind])
-                                index.append([i, j, k,l])
-                                ind = ind + 1
-            else:
-                raise ValueError
-            return {'fishPipeline': {'fishPipelineData':fishPipelineData,'index':index}}
+    def sharpness(self,squish_axes=None,computer=DistributedComputeLocal()):
+        def function(self,chunks,metadatas,events):
+            chunks_output = {}
+            kernel = np.array([[0, 1, 0], [1, -4, 1], [0, 1, 0]]).astype('float')
+            sharpness=[]
+            for i in range(chunks):
+                sharpness.append(np.sum(np.abs(convolve2d(chunks[i], kernel))))
+            chunks_output['sharpness']=sharpness
+            return (chunks,chunks_output)
+        node = PostProcessNode(squish_axes=squish_axes, computer=computer)
+        node.function = function
+        return node
 
-        process = PostProcessNode(computer=self.computer)
-        process.function = function
-        return process
+    def sharpest(self,squish_axes=None,computer=DistributedComputeLocal()):
+        def function(self,chunks,metadatas,events):
+            chunks_output = {}
+            kernel = np.array([[0, 1, 0], [1, -4, 1], [0, 1, 0]]).astype('float')
+            sharpness=[]
+            for i in range(chunks):
+                sharpness.append(np.sum(np.abs(convolve2d(chunks[i], kernel))))
+            chunks_output['sharpest_value'],chunks_output['sharpest_index']=np.max(sharpness)
+            return (chunks,chunks_output)
+        node = PostProcessNode(squish_axes=squish_axes, computer=computer)
+        node.function = function
+        return node
+
+    def fishPipeline(self,squish_axes=None,computer=DistributedComputeLocal()):
+        def function(self,chunks,metadatas,events):
+            chunks_output = {}
+            return (chunks,chunks_output)
+        node = PostProcessNode(squish_axes=squish_axes, computer=computer)
+        node.function = function
+        return node
 
     def SpotDetectImagesBooleanDoughnut(self,threshold=20):
         def function(self,dataset,acq,*args,threshold=threshold):
