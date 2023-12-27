@@ -249,9 +249,10 @@ class PostProcessLibrary():
             chunks_output = {}
             kernel = np.array([[0, 1, 0], [1, -4, 1], [0, 1, 0]]).astype('float')
             sharpness=[]
-            for i in range(chunks):
+            for i in range(len(chunks)):
                 sharpness.append(np.sum(np.abs(convolve2d(chunks[i], kernel))))
-            chunks_output['sharpest_value'],chunks_output['sharpest_index']=np.max(sharpness)
+            chunks_output['sharpest_value'] = np.max(sharpness)
+            chunks_output['sharpest_index'] = np.argmax(sharpness)
             return (chunks,chunks_output)
         node = PostProcessNode(squish_axes=squish_axes, computer=computer)
         node.function = function

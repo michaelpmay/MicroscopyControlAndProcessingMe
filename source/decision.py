@@ -9,7 +9,7 @@ class iDecision:
         '''take old acquisition and processed data dictionary and propose a new experiment'''
         return
 
-class Decision(iDecision):
+class DecisionIfThen(iDecision):
     def __init__(self):
         self.logic=lambda:None
         self.rule=lambda:None
@@ -32,11 +32,11 @@ class Decision(iDecision):
             return acq
         self.rule=function
 
-    def ifThreshholdLessThan(self,key,value):
-        pass
+    def IfThreshHoldLessThan(self,key,value):
+        return self
 
-    def ifThesholdGreaterThan(self,key,value):
-        pass
+    def IfThreshHoldGreaterThan(self,key,value):
+        return self
 
 
 
@@ -44,6 +44,12 @@ class Decision(iDecision):
 class DecisionNull(iDecision):
     def propose(self,processed_data,acquisition):
         return None
+
+class DecisionFromCallback(iDecision):
+    def __init__(self,function=lambda self,processed_data,acquisition: None):
+        self.function=function
+    def propose(self,processed_data,acquisition):
+        return self.function(self,processed_data,acquisition)
 
 
 class DecisionThreshold(iDecision):
@@ -69,7 +75,7 @@ class DecisionAdjustLaserIntensity(iDecision):
     def __init__(self):
         self.targetMeanIntensity=0.2
     def propose(self,processed_data,acquisition):
-        if not isinstance(processed_data,ProcessedData):
+        if not isinstance(processed_data,list):
             raise TypeError
         if not isinstance(acquisition,AcquisitionPlugin):
             raise TypeError
@@ -78,7 +84,7 @@ class DecisionAdjustLaserIntensity(iDecision):
 
 class DecisionSelectOptimalZPlaneFromSharpness(iDecision):
     def propose(self,processed_data,acquisition):
-        if not isinstance(processed_data,ProcessedData):
+        if not isinstance(processed_data,list):
             raise TypeError
         if not isinstance(acquisition,AcquisitionPlugin):
             raise TypeError
@@ -87,7 +93,7 @@ class DecisionSelectOptimalZPlaneFromSharpness(iDecision):
 
 class DecisionFisherOptimize(iDecision):
     def propose(self,processed_data,acquisition):
-        if not isinstance(processed_data,ProcessedData):
+        if not isinstance(processed_data,list):
             raise TypeError
         if not isinstance(acquisition,AcquisitionPlugin):
             raise TypeError
@@ -99,7 +105,7 @@ class DecisionFisherDeoptimize(iDecision):
         self.model=Model()
 
     def propose(self,processed_data,acquisition):
-        if not isinstance(processed_data,ProcessedData):
+        if not isinstance(processed_data,list):
             raise TypeError
         if not isinstance(acquisition,AcquisitionPlugin):
             raise TypeError
@@ -111,7 +117,7 @@ class DecisionPickROIFromMask(iDecision):
         self.numCellsThreshold=numCellsThreshold
         self.xyPositionOptimizer=ZSearchXYPositionOptimizerFull()
     def propose(self, processed_data, acquisition,zRange=None,timeRange=None,channels=None,split_roi=False,maxNumCells=10000000):
-        if not isinstance(processed_data,ProcessedData):
+        if not isinstance(processed_data,list):
             raise TypeError
         if not isinstance(acquisition,AcquisitionPlugin):
             raise TypeError
@@ -171,7 +177,7 @@ class DecisionPickROIFromXYSpotLocations(iDecision):
         self.numCellsThreshold=numCellsThreshold
         self.xyPositionOptimizer=ZSearchXYPositionOptimizerFull()
     def propose(self, processed_data, acquisition,zRange=None,timeRange=None,channels=None):
-        if not isinstance(processed_data,ProcessedData):
+        if not isinstance(processed_data,list):
             raise TypeError
         if not isinstance(acquisition,AcquisitionPlugin):
             raise TypeError
@@ -215,7 +221,7 @@ class DecisionSelectOptimalZPlaneFromEstimator:
     def __init__(self,estimator=None):
         self.estimator=estimator
     def propose(self, processed_data, acquisition,zRange=None,timeRange=None,channels=None):
-        if not isinstance(processed_data, ProcessedData):
+        if not isinstance(processed_data, list):
             raise TypeError
         if not isinstance(acquisition, AcquisitionPlugin):
             raise TypeError
@@ -241,7 +247,7 @@ class DecisionSelectOptimalZPlaneFromSharpestZ:
     def __init__(self):
         self.estimator=ZPlaneEstimator()
     def propose(self, processed_data, acquisition,zRange=None,timeRange=None,channels=None):
-        if not isinstance(processed_data, ProcessedData):
+        if not isinstance(processed_data, list):
             raise TypeError
         if not isinstance(acquisition, AcquisitionPlugin):
             raise TypeError
@@ -280,7 +286,7 @@ class DecisionSelectOptimalZPlaneFromSharpestZ:
 
 class DecisionPickXYROIFromDetectionBoolean(iDecision):
     def propose(self,processed_data,acquisition,zRange=None,timeRange=None,channels=None):
-        if not isinstance(processed_data,ProcessedData):
+        if not isinstance(processed_data,list):
             raise TypeError
         if not isinstance(acquisition,AcquisitionPlugin):
             raise TypeError
