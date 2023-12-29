@@ -9,6 +9,56 @@ class iDecision:
         '''take old acquisition and processed data dictionary and propose a new experiment'''
         return
 
+
+class Decision(iDecision):
+    def __init__(self,function=None,acquisition=None):
+        self.function=function
+    def propose(self,processed_data,acquisition):
+        return self.function(self,processed_data,acquisition)
+
+class DecisionLibrary:
+    def get(self,key,args,kwargs):
+        return None
+
+    def list(self):
+        pass
+
+    def null(self):
+        def function(self, processed_data, acquisition):
+            return None
+        decision=Decision(function=function)
+        return decision
+
+    def repeat(self):
+        def function(self, processed_data, acquisition):
+            return acquisition
+        decision = Decision(function=function)
+        return decision
+
+    def threshhold(self,key,value):
+        def function(self, processed_data, acquisition):
+            return None
+
+        decision = Decision(function=function)
+        return decision
+
+    def pickSharpest(self):
+        def function(self, processed_data, acquisition):
+            for i in range(len(processed_data)):
+                pass
+            return None
+
+        decision = Decision(function=function)
+        return decision
+
+    def pickROI(self,numCells=1):
+        def function(processed_data, acquisition):
+            return None
+
+        decision = Decision(function=function)
+        return decision
+
+
 class DecisionIfThen(iDecision):
     def __init__(self):
         self.logic=lambda:None
@@ -38,18 +88,9 @@ class DecisionIfThen(iDecision):
     def IfThreshHoldGreaterThan(self,key,value):
         return self
 
-
-
-
 class DecisionNull(iDecision):
     def propose(self,processed_data,acquisition):
         return None
-
-class DecisionFromCallback(iDecision):
-    def __init__(self,function=lambda self,processed_data,acquisition: None):
-        self.function=function
-    def propose(self,processed_data,acquisition):
-        return self.function(self,processed_data,acquisition)
 
 
 class DecisionThreshold(iDecision):
