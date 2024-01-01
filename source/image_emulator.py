@@ -11,6 +11,7 @@ import re
 from scipy.ndimage import gaussian_filter
 import pickle
 from data_manager import DataManager
+import warnings
 class iImageEmulator:
     '''parses events and creates a simualetd image'''
     def generate(self,position,n=20,channelIndex=None):
@@ -226,6 +227,7 @@ class ImageEmulator2Channel():
                                        cell_size_Z_Y_X[library_cell_index, 2], nucleus_area,
                                        number_of_spots] + ts_array.tolist() + [library_cell_index],
                                       index=simulation_dataframe.columns)
+                warnings.simplefilter(action='ignore', category=FutureWarning)
                 simulation_dataframe = simulation_dataframe.append(cell_data, ignore_index=True)
                 #simulation_dataframe = pd.concat([simulation_dataframe,cell_data],ignore_index=True)
                 printed_cells += 1

@@ -66,6 +66,19 @@ class TestPostProcessorNodeLibrary(TestCase):
         for image in self.images:
             data = node.process(image, self.acq)
             image.close()
+    def test_sharpness_returnsdata(self):
+        node=self.object.get('sharpness')
+        for image in self.images:
+            data = node.process(image, self.acq)
+            image.close()
+
+    def test_sharpest_returnsdata(self):
+        node = self.object.get('sharpest')
+        for image in self.images:
+            data = node.process(image, self.acq)
+            print(data)
+            image.close()
+
 '''
     def test_cellDetectNumCellsInRoi_returnsdata(self):
         node=self.object.get('cellDetectNumCellsInRoi')
@@ -126,6 +139,7 @@ class TestPostProcessPipeline(TestCase):
         for image in self.images:
             d = self.object.process(image, AcquisitionPlugin())
             image.close()
+
 
     def test_processmean_returnsMean(self):
         self.object.add('mean')

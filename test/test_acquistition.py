@@ -145,6 +145,9 @@ class TestAcquisitionBuilder(unittest.TestCase):
 
 
 class TestPluginLibrary(unittest.TestCase):
+
+    def setUp(self) -> None:
+        self.object=AcquisitionPluginLibrary()
     def testInterface(self):
         lib=AcquisitionPluginLibrary()
         lib.list
@@ -168,3 +171,14 @@ class TestPluginLibrary(unittest.TestCase):
         self.assertRaises(KeyError,lib.get,'get')
         self.assertRaises(KeyError, lib.get, 'list')
         self.assertRaises(TypeError, lib.get, 0)
+
+    def test_xyLooseGrid_returnsCorrectEventsLength(self):
+        acquisition=self.object.xyLooseGrid([0,1],[0,1],[0,0])
+        self.assertEqual(len(acquisition.getEvents()),4)
+        acquisition = self.object.xyLooseGrid([0, 1], [0, 1], [0, 0],zRange=[-1.,1.,1.])
+        self.assertEqual(len(acquisition.getEvents()), 4*3)
+        acquisition = self.object.xyLooseGrid([0, 1], [0, 1], [0, 0],timeRange=[2,1.5])
+        self.assertEqual(len(acquisition.getEvents()), 4*2)
+        acquisition = self.object.xyLooseGrid([0, 1], [0, 1], [0, 0],timeRange=[2,1.5],zRange=[-1.,1.,1.],channelRange=['Channel',['1','2'],[10,10]])
+        self.assertEqual(len(acquisition.getEvents()), 4*3*2*2)
+

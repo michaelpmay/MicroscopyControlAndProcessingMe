@@ -1,5 +1,4 @@
 import scipy.signal
-
 from acquisition import AcquisitionPlugin
 from itertools import permutations
 import numpy as np
@@ -7,7 +6,8 @@ from scipy.signal import convolve2d
 from image_process import CellDetectorCellMask, SpotCountLocations, SpotCounter, SpotCountLocationsDoughnut,SpotDetectImagesBooleanDoughnut,ImageCalculateFishPipeline
 from distributed_computing import Task,DistributedComputeDaskTask,DistributedComputeLocal
 from ndtiff import NDTiffDataset
-
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
 class iPostProcessorPipeline:
     def add(self,key,*args,**kwargs):
         '''add a process which will generate tasks'''
@@ -236,9 +236,9 @@ class PostProcessLibrary():
             chunks_output = {}
             kernel = np.array([[0, 1, 0], [1, -4, 1], [0, 1, 0]]).astype('float')
             sharpness=[]
-            for i in range(chunks):
+            for i in range(len(chunks)):
                 sharpness.append(np.sum(np.abs(convolve2d(chunks[i], kernel))))
-            chunks_output['sharpness']=sharpness
+            chunks_output['sharpness']=np.sum(sharpness)
             return (chunks,chunks_output)
         node = PostProcessNode(squish_axes=squish_axes, computer=computer)
         node.function = function

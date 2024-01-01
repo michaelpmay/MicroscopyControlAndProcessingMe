@@ -18,8 +18,8 @@ class iAcquisitionLibrary:
 class EventsTicket:
     """a big glob of parameters to represent data needed for acquisition"""
     def __init__(self):
-        self._num_time_points = 1
-        self._time_interval_s = 0
+        self._num_time_points = None
+        self._time_interval_s = None
         self._z_start = None
         self._z_end = None
         self._z_step = None
@@ -1018,7 +1018,7 @@ class AcquisitionPluginLibrary:
         if timeRange:
             builder.addTimedEvents(timeRange[0], timeRange[1])
         if zRange:
-            builder.addZEvents(zRange[0], zRange[0], zRange[0])
+            builder.addZEvents(zRange[0], zRange[1], zRange[2])
         if channelRange:
             builder.addChannelEvents(channelRange[0], channelRange[1], channelRange[2])
         if laserIntensities:
@@ -1055,14 +1055,16 @@ class AcquisitionPluginLibrary:
         plugin = builder.getPlugin()
         return plugin
 
-    def xyTightGrid(self,xRangeROI,yRangeROI,xyOriginROI,imageShape,calibration=NullCalibration(),timeRange=None,zRange=None,channelRange=None,name='xyTightGrid'):
+    def xyTightGrid(self,xRangeROI,yRangeROI,xyOriginROI,imageShape,calibration=NullCalibration(),timeRange=None,zRange=None,channelRange=None,name='xyTightGrid',emulator=None,laserIntensities=None):
         builder = AcquisitionBuilder()
         if timeRange:
             builder.addTimedEvents(timeRange[0],timeRange[1])
         if zRange:
-            builder.addZEvents(zRange[0], zRange[0], zRange[0])
+            builder.addZEvents(zRange[0], zRange[1], zRange[2])
         if channelRange:
             builder.addChannelEvents(channelRange[0],channelRange[1],channelRange[2])
+        if laserIntensities:
+            builder.addLaserIntensities(laserIntensities)
         builder = AcquisitionBuilder()
         sequence = []
         for y in yRangeROI:
@@ -1096,15 +1098,17 @@ class AcquisitionPluginLibrary:
         plugin = builder.getPlugin()
         return plugin
 
-    def xySequence(self,sequence,calibration=NullCalibration(),timeRange=None,zRange=None,channelRange=None,emulator=None):
+    def xySequence(self,sequence,calibration=NullCalibration(),timeRange=None,zRange=None,channelRange=None,emulator=None,laserIntensities=None):
         builder = AcquisitionBuilder()
         # Build the events
         if timeRange:
             builder.addTimedEvents(timeRange[0],timeRange[1])
         if zRange:
-            builder.addZEvents(zRange[0], zRange[0], zRange[0])
+            builder.addZEvents(zRange[0], zRange[1], zRange[2])
         if channelRange:
             builder.addChannelEvents(channelRange[0],channelRange[1],channelRange[2])
+        if laserIntensities:
+            builder.addLaserIntensities(laserIntensities)
         sequence=calibration.map(sequence)
         builder.addXYSequence(sequence)
         builder.setEventsOrder('tpzc')
@@ -1133,15 +1137,15 @@ class AcquisitionPluginLibrary:
         plugin = builder.getPlugin()
         return plugin
 
-    def xyzSequence(self,sequence,timeRange=None,zRange=None,channelRange=None,emulator=None):
+    def xyzSequence(self,sequence,timeRange=None,channelRange=None,emulator=None,laserIntensities=None):
         builder = AcquisitionBuilder()
         # Build the events
         if timeRange:
             builder.addTimedEvents(timeRange[0],timeRange[1])
-        if zRange:
-            builder.addZEvents(zRange[0], zRange[0], zRange[0])
         if channelRange:
             builder.addChannelEvents(channelRange[0],channelRange[1],channelRange[2])
+        if laserIntensities:
+            builder.addLaserIntensities(laserIntensities)
         builder.addXYZSequence(sequence)
         builder.setEventsOrder('tpzc')
         # build the hooks
