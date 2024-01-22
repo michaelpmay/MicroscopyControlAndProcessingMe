@@ -100,7 +100,7 @@ class APDSystem:
     def acquire(self,acquisition):
         dataset = self.backend.acquire(acquisition)
         return dataset
-class APDFunctionLibrary(iAPDSystemLibrary):
+class APDFunctionLzbrary(iAPDSystemLibrary):
     def list(self):
         apdList = [attribute for attribute in dir(self)
                       if callable(getattr(self, attribute))
